@@ -1,5 +1,5 @@
-import {View} from 'react-native';
-import React, {useState} from 'react';
+import { View } from 'react-native';
+import React, { useState } from 'react';
 import HomeAccordian from './HomeAccordian';
 
 const faqData = [

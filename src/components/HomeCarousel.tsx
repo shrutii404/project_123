@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   FlatList,
@@ -18,7 +18,7 @@ const image3 = require('../assets/FB2.jpg');
 const image4 = require('../assets/FB3.jpg');
 const image5 = require('../assets/FB4.jpg');
 const image6 = require('../assets/p1.jpg');
-const {width: windowWidth, height: windowHeight} = Dimensions.get('window');
+const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
 const data = [
   {
@@ -84,7 +84,7 @@ const reviewdata = [
   },
 ];
 
-const HomeCarousel = ({type}) => {
+const HomeCarousel = ({ type }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
   const intervalRef = useRef(null);
@@ -101,7 +101,7 @@ const HomeCarousel = ({type}) => {
       if (nextIndex >= data.length) {
         nextIndex = 0;
       }
-      flatListRef.current.scrollToIndex({index: nextIndex, animated: true});
+      flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
       setActiveIndex(nextIndex);
     }, 3000); // Change slide every 3 seconds
   };
@@ -112,52 +112,46 @@ const HomeCarousel = ({type}) => {
     }
   };
 
-  const handleDotPress = index => {
-    flatListRef.current.scrollToIndex({index, animated: true});
+  const handleDotPress = (index) => {
+    flatListRef.current.scrollToIndex({ index, animated: true });
     setActiveIndex(index);
     stopAutoScroll(); // Stop auto-scrolling when manually scrolling
     startAutoScroll(); // Restart auto-scrolling
   };
 
-  const handleScroll = event => {
+  const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / windowWidth);
     setActiveIndex(index);
   };
 
-  const handleArrowPress = direction => {
+  const handleArrowPress = (direction) => {
     let nextIndex = activeIndex + direction;
     if (nextIndex >= data.length) {
       nextIndex = 0;
     } else if (nextIndex < 0) {
       nextIndex = data.length - 1;
     }
-    flatListRef.current.scrollToIndex({index: nextIndex, animated: true});
+    flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
     setActiveIndex(nextIndex);
     stopAutoScroll(); // Stop auto-scrolling when manually scrolling
     startAutoScroll(); // Restart auto-scrolling
   };
 
-  const renderItem = ({item}) => {
+  const renderItem = ({ item }) => {
     return (
       <View style={styles.itemContainer}>
         {type === 'herosection' ? (
-          // <Image source={{uri: item.uri}} style={styles.image} />
-          <Image source={ item.uri} style={styles.image} />
+          <Image source={item.uri} style={styles.image} />
         ) : (
           <View className="w-[90%]  p-4 rounded-lg bg-white border border-gray-300 items-center flex-col  justify-center">
             <View>
               <View className="flex-row justify-center mb-2">
-                {Array.from({length: item.rating}).map((_, index) => (
+                {Array.from({ length: item.rating }).map((_, index) => (
                   <Ionicons key={index} name="star" size={20} color="#000" />
                 ))}
-                {Array.from({length: 5 - item.rating}).map((_, index) => (
-                  <Ionicons
-                    key={index}
-                    name="star-outline"
-                    size={20}
-                    color="#000"
-                  />
+                {Array.from({ length: 5 - item.rating }).map((_, index) => (
+                  <Ionicons key={index} name="star-outline" size={20} color="#000" />
                 ))}
               </View>
               <View className="mb-2 flex-row w-[70%]">
@@ -169,9 +163,7 @@ const HomeCarousel = ({type}) => {
               </View>
               <View className="flex-col items-center justify-center ">
                 <FontAwesome5 name="user-circle" size={25} color="#000" />
-                <Text className="text-center text-gray-500">
-                  {item.reviewby}
-                </Text>
+                <Text className="text-center text-gray-500">{item.reviewby}</Text>
               </View>
             </View>
           </View>
@@ -186,10 +178,7 @@ const HomeCarousel = ({type}) => {
         {data.map((_, index) => (
           <TouchableOpacity
             key={index}
-            style={[
-              styles.dot,
-              index === activeIndex ? styles.activeDot : null,
-            ]}
+            style={[styles.dot, index === activeIndex ? styles.activeDot : null]}
             onPress={() => handleDotPress(index)}
           />
         ))}
@@ -203,7 +192,7 @@ const HomeCarousel = ({type}) => {
         ref={flatListRef}
         data={type == 'herosection' ? data : reviewdata}
         renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -214,18 +203,14 @@ const HomeCarousel = ({type}) => {
 
       {/* Left Arrow */}
       {type == 'herosection' && (
-        <TouchableOpacity
-          style={styles.leftArrow}
-          onPress={() => handleArrowPress(-1)}>
+        <TouchableOpacity style={styles.leftArrow} onPress={() => handleArrowPress(-1)}>
           <Text style={styles.arrowText}>◀</Text>
         </TouchableOpacity>
       )}
 
       {/* Right Arrow */}
       {type == 'herosection' && (
-        <TouchableOpacity
-          style={styles.rightArrow}
-          onPress={() => handleArrowPress(1)}>
+        <TouchableOpacity style={styles.rightArrow} onPress={() => handleArrowPress(1)}>
           <Text style={styles.arrowText}>▶</Text>
         </TouchableOpacity>
       )}
@@ -240,7 +225,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     width: windowWidth,
-    height: windowHeight * 0.3,
+    height: 150,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -272,14 +257,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 10,
     top: '50%',
-    transform: [{translateY: -20}],
+    transform: [{ translateY: -20 }],
     zIndex: 1,
   },
   rightArrow: {
     position: 'absolute',
     right: 10,
     top: '50%',
-    transform: [{translateY: -20}],
+    transform: [{ translateY: -20 }],
     zIndex: 1,
   },
   arrowText: {

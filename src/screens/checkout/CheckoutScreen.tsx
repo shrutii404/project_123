@@ -1,24 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-} from 'react-native';
-import {House} from 'phosphor-react-native';
-import {useSelector} from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { House } from 'phosphor-react-native';
+import { useSelector } from 'react-redux';
 import apiService from '../../services/apiSevices';
 import OrderSummaryCard from '../../components/OrderSummaryCard';
 import WebView from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 const CheckoutDetailsScreen = () => {
   const navigation = useNavigation();
   const [availability, setAvailability] = useState(3);
-  const userDetails = useSelector(state => state.user.user);
+  const userDetails = useSelector((state) => state.user.user);
 
   const [userData, setUserData] = useState(null);
   const [webViewUrl, setWebViewUrl] = useState<string | null>(null);
@@ -27,9 +20,7 @@ const CheckoutDetailsScreen = () => {
     const fetchUserData = async () => {
       try {
         const userDetailsString = await AsyncStorage.getItem('userDetails');
-        const userDetailstemp = userDetailsString
-          ? JSON.parse(userDetailsString)
-          : null;
+        const userDetailstemp = userDetailsString ? JSON.parse(userDetailsString) : null;
         console.log(userDetailstemp);
         const response = await apiService.getUserDetails(userDetailstemp.id);
         if (response.data) {
@@ -74,7 +65,7 @@ const CheckoutDetailsScreen = () => {
   const hasAddresses = addresses.length > 0;
 
   const handleAddressNav = () => {
-    navigation.navigate('ManageProfile', {defaulttab: 2});
+    navigation.navigate('ManageProfile', { defaulttab: 2 });
   };
 
   return (
@@ -82,11 +73,11 @@ const CheckoutDetailsScreen = () => {
       {webViewUrl ? (
         <WebView
           className="flex-1 border border-black h-[90%]"
-          source={{uri: webViewUrl}}
+          source={{ uri: webViewUrl }}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          onNavigationStateChange={navState => {}}
-          style={{flex: 1}}
+          onNavigationStateChange={(navState) => {}}
+          style={{ flex: 1 }}
         />
       ) : (
         <ScrollView className="flex-1 bg-white">
@@ -110,24 +101,22 @@ const CheckoutDetailsScreen = () => {
                 <Text className="text-2xl font-bold">Shipping Address</Text>
                 <View className="mt-4">
                   {hasAddresses ? (
-                    addresses.map(address => (
+                    addresses.map((address) => (
                       <View
                         key={address.id}
                         className={`border-2 rounded-lg ${
-                          address.selected
-                            ? 'border-[#6e6df9] bg-[#f2f1ff]'
-                            : 'border-gray-300'
-                        } p-4 mb-4 shadow-md`}>
+                          address.selected ? 'border-[#6e6df9] bg-[#f2f1ff]' : 'border-gray-300'
+                        } p-4 mb-4 shadow-md`}
+                      >
                         <View className="flex-row justify-between items-center mb-4">
                           <View className="flex-row items-center">
                             <House size={28} weight="fill" color="#6e6df9" />
-                            <Text className="text-xl font-semibold text-[#6e6df9] ml-2">
-                              Home
-                            </Text>
+                            <Text className="text-xl font-semibold text-[#6e6df9] ml-2">Home</Text>
                           </View>
                           <TouchableOpacity
                             className="bg-[#6e6df9] px-4 py-2 rounded"
-                            onPress={handleAddressNav}>
+                            onPress={handleAddressNav}
+                          >
                             <Text className="text-white">Edit</Text>
                           </TouchableOpacity>
                         </View>
@@ -135,35 +124,26 @@ const CheckoutDetailsScreen = () => {
                           {address.street}
                         </Text>
                         <View className="flex-row mb-2">
-                          <Text className="text-sm text-gray-600 mr-4">
-                            {address.city}
-                          </Text>
-                          <Text className="text-sm text-gray-600">
-                            {address.state}
-                          </Text>
+                          <Text className="text-sm text-gray-600 mr-4">{address.city}</Text>
+                          <Text className="text-sm text-gray-600">{address.state}</Text>
                         </View>
                         <View className="flex-row">
-                          <Text className="text-sm text-gray-600 mr-4">
-                            {address.country}
-                          </Text>
-                          <Text className="text-sm text-gray-600">
-                            {address.postalCode}
-                          </Text>
+                          <Text className="text-sm text-gray-600 mr-4">{address.country}</Text>
+                          <Text className="text-sm text-gray-600">{address.postalCode}</Text>
                         </View>
                       </View>
                     ))
                   ) : (
                     <View className="items-center py-8">
-                      <Text className="text-xl font-semibold mb-2">
-                        No Addresses Available
-                      </Text>
+                      <Text className="text-xl font-semibold mb-2">No Addresses Available</Text>
                       <Text className="text-sm text-[#6c757d] text-center mb-4">
-                        You don't have any addresses saved yet. Please add a new
-                        address to get started.
+                        You don't have any addresses saved yet. Please add a new address to get
+                        started.
                       </Text>
                       <TouchableOpacity
                         className="bg-[#6e6df9] px-4 py-2 rounded"
-                        onPress={handleAddressNav}>
+                        onPress={handleAddressNav}
+                      >
                         <Text className="text-white">Add Address</Text>
                       </TouchableOpacity>
                     </View>

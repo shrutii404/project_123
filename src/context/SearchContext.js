@@ -1,17 +1,11 @@
-import React, {createContext, useState} from 'react';
-import {
-  Modal,
-  View,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import React, { createContext, useState } from 'react';
+import { Modal, View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Ensure you have react-native-vector-icons installed
-import {useGetProductVariationsQuery} from '../store/slices/apiSlice';
+import { useGetProductVariationsQuery } from '../store/slices/apiSlice';
 
 const SearchContext = createContext();
 
-export const SearchProvider = ({children}) => {
+export const SearchProvider = ({ children }) => {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,8 +23,8 @@ export const SearchProvider = ({children}) => {
   const handleFilter = () => {
     setLoading(true);
     setSearchResults([]);
-    const filterdata = products.filter(product =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    const filterdata = products.filter((product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setSearchResults(filterdata);
     setLoading(false);
@@ -46,7 +40,8 @@ export const SearchProvider = ({children}) => {
         handleFilter,
         loading,
         searchResults,
-      }}>
+      }}
+    >
       {children}
     </SearchContext.Provider>
   );
@@ -75,7 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 2,
   },

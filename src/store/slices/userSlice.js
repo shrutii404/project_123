@@ -1,6 +1,6 @@
-import {createSelector, createSlice} from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 
-const initialState = {user: null};
+const initialState = { user: null };
 
 export const userSlice = createSlice({
   name: 'user',
@@ -13,7 +13,7 @@ export const userSlice = createSlice({
         state.user = null;
       }
     },
-    userLogout: state => {
+    userLogout: (state) => {
       state.user = null;
     },
   },

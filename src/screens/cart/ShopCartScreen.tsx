@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   FlatList,
 } from 'react-native';
 import CartPriceCard from '../../components/CartPriceCard';
-import {CaretDown, CaretUp, SealPercent} from 'phosphor-react-native';
+import { CaretDown, CaretUp, SealPercent } from 'phosphor-react-native';
 import CheckoutCartCard from '../../components/CheckoutCartCard';
 import CheckoutCart from '../../components/CheckoutCart';
 
@@ -18,17 +18,14 @@ const ShopCartScreen = () => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
 
   useEffect(() => {
-    // Simulate user authentication check
-    const user = null; // Replace with actual user check
+    const user = null;
     if (!user) {
-      // Redirect logic can be implemented here
     } else {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // Set document title (not applicable in React Native)
     console.log('Hurla Hardware | Cart');
   }, []);
 
@@ -50,16 +47,15 @@ const ShopCartScreen = () => {
             }}
             className="h-9 w-9 rounded-full bg-black"
           />
-          <Text className="text-white text-lg ml-3">
-            Hurla Hardware & Paints
-          </Text>
+          <Text className="text-white text-lg ml-3">Hurla Hardware & Paints</Text>
         </View>
 
         <View className="  mt-8 w-full items-center">
           <View className="flex-1 rounded-md border-t-0 w-full items-center">
             <TouchableOpacity
               className=" px-4 border p-3 w-[90%] rounded border-gray-200 flex-row items-center justify-between"
-              onPress={() => setIsAccordionOpen(prev => !prev)}>
+              onPress={() => setIsAccordionOpen((prev) => !prev)}
+            >
               <View className="flex-row items-center">
                 <SealPercent size={32} weight="fill" color="black" />
                 <Text className="flex font-semibold text-lg ml-3 text-black">
@@ -76,14 +72,13 @@ const ShopCartScreen = () => {
             {isAccordionOpen && (
               <View className="p-4 w-[85%]">
                 <Text className="text-black text-gray-500">
-                  This offer is coming soon! Stay tuned for details on how you
-                  can benefit from this exciting product discount.
+                  This offer is coming soon! Stay tuned for details on how you can benefit from this
+                  exciting product discount.
                 </Text>
               </View>
             )}
           </View>
           <CheckoutCart />
-          {/* Placeholder for CheckoutCart and CartPriceCard */}
           <View className="border rounded p-4 border-gray-200 mt-2 w-[90%]">
             <CartPriceCard />
           </View>

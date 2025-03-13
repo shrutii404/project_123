@@ -1,24 +1,21 @@
-import {ScrollView, Text, View, Image, ActivityIndicator} from 'react-native';
+import { ScrollView, Text, View, Image, ActivityIndicator } from 'react-native';
 import HomeSubsection from '../../components/HomeSubsection';
 import HomeWallCards from '../../components/HomeWallCards';
 import HomeServicesInfo from '../../components/HomeServicesInfo';
 import HomeCarousel from '../../components/HomeCarousel';
 import HomeFooter from '../../components/HomeFooter';
-import {
-  useGetCategoriesQuery,
-  useGetProductVariationsQuery,
-} from '../../store/slices/apiSlice';
-import {useEffect, useState} from 'react';
+import { useGetCategoriesQuery, useGetProductVariationsQuery } from '../../store/slices/apiSlice';
+import { useEffect, useState } from 'react';
 import ShimmerEffect from '../../components/ShimmerEffect';
 import HomeFAQQuestions from '../../components/HomeFAQQuestions';
 import SearchBar from '../../components/SearchBar';
-import {useSearchBox} from '../../context/SearchContext';
-import {placeHolderImageSquare} from '../../utils/constants';
+import { useSearchBox } from '../../context/SearchContext';
+import { placeHolderImageSquare } from '../../utils/constants';
 
 function HomeScreen() {
   const [parentdata, setParentdata] = useState([]);
   const [imageData, setImageData] = useState({});
-  const {searchVisible} = useSearchBox();
+  const { searchVisible } = useSearchBox();
 
   const {
     data: categories,
@@ -36,12 +33,12 @@ function HomeScreen() {
       if (categoryLoading || productLoading) return;
 
       if (Array.isArray(categories) && Array.isArray(products)) {
-        const parent = categories.filter(category => category.parentId == null);
+        const parent = categories.filter((category) => category.parentId == null);
         parent.sort((a, b) => a.id - b.id);
 
-        const result = parent.map(parentItem => {
+        const result = parent.map((parentItem) => {
           const children = categories
-            .filter(child => child.parentId === parentItem.id)
+            .filter((child) => child.parentId === parentItem.id)
             .sort((a, b) => a.id - b.id);
           return {
             name: parentItem.name,
@@ -54,24 +51,20 @@ function HomeScreen() {
         setParentdata(result);
 
         const tempimageData = {};
-        const attributeTypes = result.flatMap(r =>
-          r.children.map(child => child.name),
-        );
+        const attributeTypes = result.flatMap((r) => r.children.map((child) => child.name));
 
-        result.forEach(parentItem => {
+        result.forEach((parentItem) => {
           if (parentItem.children.length > 0) {
-            const valuesAvailable =
-              parentItem.children[0]?.valuesAvailable || [];
-            valuesAvailable.forEach(value => {
-              const matchingItem = products.find(item => {
+            const valuesAvailable = parentItem.children[0]?.valuesAvailable || [];
+            valuesAvailable.forEach((value) => {
+              const matchingItem = products.find((item) => {
                 return (
-                  item.attributes &&
-                  attributeTypes.some(type => item.attributes[type] === value)
+                  item.attributes && attributeTypes.some((type) => item.attributes[type] === value)
                 );
               });
               if (matchingItem) {
                 const matchedAttributeType = attributeTypes.find(
-                  type => matchingItem.attributes[type] === value,
+                  (type) => matchingItem.attributes[type] === value
                 );
                 tempimageData[value] = {
                   image: matchingItem.images[0] ?? placeHolderImageSquare,
@@ -117,9 +110,7 @@ function HomeScreen() {
           <HomeSubsection key={index} data={item} imageData={imageData} />
         ))}
         <View className="items-start w-[90%] mt-4">
-          <Text className="text-black mb-4 font-semibold">
-            Shop Best for Your Walls
-          </Text>
+          <Text className="text-black mb-4 font-semibold">Shop Best for Your Walls</Text>
           <View>
             {parentdata.map((item, index) => (
               <HomeWallCards key={index} data={item} />

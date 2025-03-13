@@ -1,17 +1,16 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
-import {View, TextInput, TouchableOpacity} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, TextInput, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useSearchBox} from '../context/SearchContext';
+import { useSearchBox } from '../context/SearchContext';
 
 interface SearchBarProps {
   searchVisible: boolean;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({searchVisible}) => {
+const SearchBar: React.FC<SearchBarProps> = ({ searchVisible }) => {
   const navigation = useNavigation();
-  const {searchQuery, setSearchQuery, handleFilter, toggleSearchBar} =
-    useSearchBox();
+  const { searchQuery, setSearchQuery, handleFilter, toggleSearchBar } = useSearchBox();
 
   const handleSearch = () => {
     toggleSearchBar();
@@ -31,9 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({searchVisible}) => {
           onChangeText={setSearchQuery}
           placeholderTextColor="#a0aec0"
         />
-        <TouchableOpacity
-          className="bg-black p-3 rounded-full ml-2"
-          onPress={handleSearch}>
+        <TouchableOpacity className="bg-black p-3 rounded-full ml-2" onPress={handleSearch}>
           <Ionicons name="search-outline" size={21} color="white" />
         </TouchableOpacity>
       </View>

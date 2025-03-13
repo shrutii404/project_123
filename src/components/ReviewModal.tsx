@@ -11,33 +11,23 @@ const ReviewModal = ({ isModalVisible, onCloseModal, productId }) => {
     setRating(star);
   };
 
-
- 
-
   const handleSubmitReview = async () => {
-
     const userDetailsString = await AsyncStorage.getItem('userDetails');
-  
+
     // Parse the retrieved string to an object
-    const userDetails = userDetailsString
-      ? JSON.parse(userDetailsString)
-      : null;
-  
+    const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
+
     // Check if token exists (indicating user is logged in)
     if (!userDetails && !userDetails.token) {
-       Alert.alert(
-            'Login Required',
-            'You need to log in to write a review.',
-            [{ text: 'OK' }],
-          );
+      Alert.alert('Login Required', 'You need to log in to write a review.', [{ text: 'OK' }]);
     }
-console.log("@@@@",userDetails);
+    console.log('@@@@', userDetails);
 
     const payload = {
       id: new Date().toISOString(),
       rating,
       comment,
-      userId: userDetails.id, 
+      userId: userDetails.id,
       VariationId: productId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -72,7 +62,6 @@ console.log("@@@@",userDetails);
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          
           {/* Close Button */}
           <TouchableOpacity style={styles.closeButton} onPress={onCloseModal}>
             <Icon name="close" size={20} color="#000" />
@@ -140,7 +129,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: "black",
+    color: 'black',
   },
   modalSubtitle: {
     fontSize: 14,
@@ -163,7 +152,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 20,
     textAlignVertical: 'top',
-    color: "black",
+    color: 'black',
   },
   submitButton: {
     backgroundColor: '#333',

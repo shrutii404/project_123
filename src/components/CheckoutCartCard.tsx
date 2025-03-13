@@ -1,6 +1,6 @@
-import {XCircle} from 'phosphor-react-native';
+import { XCircle } from 'phosphor-react-native';
 import React from 'react';
-import {View, Text, Image, TouchableOpacity, TextInput} from 'react-native';
+import { View, Text, Image, TouchableOpacity, TextInput } from 'react-native';
 
 const CheckoutCartCard = ({
   id,
@@ -38,7 +38,7 @@ const CheckoutCartCard = ({
           </TouchableOpacity>
         </View>
         <View>
-          {Object.keys(attributes).map(key => (
+          {Object.keys(attributes).map((key) => (
             <Text key={key} className="text-xs text-[#6c757d]">
               <Text className="text-gray-400">{key}</Text>: {attributes[key]}
             </Text>
@@ -49,13 +49,12 @@ const CheckoutCartCard = ({
             MRP: <Text className="text-black">₹{price * quantity}</Text>
           </Text>
           <View className="flex flex-row items-center">
-            <TouchableOpacity
-              onPress={handleQuantityDecrement}
-              disabled={quantity === 1}>
+            <TouchableOpacity onPress={handleQuantityDecrement} disabled={quantity === 1}>
               <Text
                 className={`p-1 px-3 bg-white border border-[#dee2e6] text-[#6c757d] ${
                   quantity === 1 ? 'text-gray-500 cursor-not-allowed' : ''
-                }`}>
+                }`}
+              >
                 -
               </Text>
             </TouchableOpacity>
@@ -63,13 +62,12 @@ const CheckoutCartCard = ({
               {quantity}
             </Text>
 
-            <TouchableOpacity
-              onPress={handleQuantityIncrement}
-              disabled={quantity === stock}>
+            <TouchableOpacity onPress={handleQuantityIncrement} disabled={quantity === stock}>
               <Text
                 className={`p-1 px-3 bg-white border border-[#dee2e6] text-[#6c757d] ${
                   quantity === stock ? 'text-gray-500 cursor-not-allowed' : ''
-                }`}>
+                }`}
+              >
                 +
               </Text>
             </TouchableOpacity>

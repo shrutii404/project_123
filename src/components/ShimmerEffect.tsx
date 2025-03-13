@@ -1,9 +1,9 @@
-import React, {useEffect, useRef} from 'react';
-import {View, Animated, Dimensions, StyleSheet} from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Animated, Dimensions, StyleSheet } from 'react-native';
 
 const screenWidth = Dimensions.get('window').width;
 
-const ShimmerEffect = ({rows = false}) => {
+const ShimmerEffect = ({ rows = false }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -12,7 +12,7 @@ const ShimmerEffect = ({rows = false}) => {
         toValue: 1,
         duration: 1500,
         useNativeDriver: true,
-      }),
+      })
     );
     shimmerAnimation.start();
   }, [animatedValue]);
@@ -27,14 +27,13 @@ const ShimmerEffect = ({rows = false}) => {
     <View style={styles.container}>
       {/* Large placeholder */}
       {!rows && (
-        <View
-          style={[styles.placeholder, {width: screenWidth - 30, height: 300}]}>
+        <View style={[styles.placeholder, { width: screenWidth - 30, height: 300 }]}>
           <Animated.View
             style={[
               styles.shimmer,
               {
                 width: screenWidth,
-                transform: [{translateX: translateX}], // move the shimmer horizontally
+                transform: [{ translateX: translateX }], // move the shimmer horizontally
               },
             ]}
           />
@@ -44,17 +43,13 @@ const ShimmerEffect = ({rows = false}) => {
       {/* Smaller placeholder 1 */}
 
       {rows && (
-        <View
-          style={[
-            styles.placeholder,
-            {width: screenWidth * 0.9, height: 50, marginTop: 30},
-          ]}>
+        <View style={[styles.placeholder, { width: screenWidth * 0.9, height: 50, marginTop: 30 }]}>
           <Animated.View
             style={[
               styles.shimmer,
               {
                 width: screenWidth,
-                transform: [{translateX: translateX}],
+                transform: [{ translateX: translateX }],
               },
             ]}
           />
@@ -62,51 +57,39 @@ const ShimmerEffect = ({rows = false}) => {
       )}
 
       {rows && (
-        <View
-          style={[
-            styles.placeholder,
-            {width: screenWidth * 0.9, height: 50, marginTop: 30},
-          ]}>
+        <View style={[styles.placeholder, { width: screenWidth * 0.9, height: 50, marginTop: 30 }]}>
           <Animated.View
             style={[
               styles.shimmer,
               {
                 width: screenWidth,
-                transform: [{translateX: translateX}],
+                transform: [{ translateX: translateX }],
               },
             ]}
           />
         </View>
       )}
 
-      <View
-        style={[
-          styles.placeholder,
-          {width: screenWidth * 0.7, height: 50, marginTop: 30},
-        ]}>
+      <View style={[styles.placeholder, { width: screenWidth * 0.7, height: 50, marginTop: 30 }]}>
         <Animated.View
           style={[
             styles.shimmer,
             {
               width: screenWidth,
-              transform: [{translateX: translateX}],
+              transform: [{ translateX: translateX }],
             },
           ]}
         />
       </View>
       {/* Smaller placeholder 2 */}
       {!rows && (
-        <View
-          style={[
-            styles.placeholder,
-            {width: screenWidth * 0.5, height: 50, marginTop: 30},
-          ]}>
+        <View style={[styles.placeholder, { width: screenWidth * 0.5, height: 50, marginTop: 30 }]}>
           <Animated.View
             style={[
               styles.shimmer,
               {
                 width: screenWidth,
-                transform: [{translateX: translateX}],
+                transform: [{ translateX: translateX }],
               },
             ]}
           />

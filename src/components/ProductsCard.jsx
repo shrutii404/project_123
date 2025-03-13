@@ -7,11 +7,11 @@ import {
   ActivityIndicator,
   ToastAndroid,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {useNavigation} from '@react-navigation/native';
-import {useDispatch, useSelector} from 'react-redux';
-import {addProduct} from '../store/slices/cartSlice';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { addProduct } from '../store/slices/cartSlice';
 import {
   useAddToWishlistMutation,
   useGetUserDetailsQuery,
@@ -19,16 +19,16 @@ import {
 } from '../store/slices/apiSlice';
 import axios from 'axios';
 import apiService from '../services/apiSevices';
-import {userSlice} from '../store/slices/userSlice';
-import {calculateActualPriceBasedOnDiscount} from '../utils/calculateDiscount';
+import { userSlice } from '../store/slices/userSlice';
+import { calculateActualPriceBasedOnDiscount } from '../utils/calculateDiscount';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {wishlistSlice} from '../store/slices/wishlistSlice';
+import { wishlistSlice } from '../store/slices/wishlistSlice';
 
-const ProductsCard = ({data, key}) => {
+const ProductsCard = ({ data, key }) => {
   const navigation = useNavigation();
-  const ratings = data?.Review.map(item => item.rating);
+  const ratings = data?.Review.map((item) => item.rating);
   const dispatch = useDispatch();
-  const userDetails = useSelector(state => state.user.user);
+  const userDetails = useSelector((state) => state.user.user);
 
   const [addToWishlist] = useAddToWishlistMutation();
   const [removeWishlist] = useRemoveWishlistMutation();
@@ -38,9 +38,7 @@ const ProductsCard = ({data, key}) => {
 
   function calculatePricePerSquareFoot() {
     // Split the dimensions string by '*' and convert to numbers
-    const [lengthFeet, widthInches] = data?.attributes['Size']
-      .split('*')
-      .map(Number);
+    const [lengthFeet, widthInches] = data?.attributes['Size'].split('*').map(Number);
 
     // Convert width from inches to feet
     const widthFeet = widthInches / 12;
@@ -63,19 +61,14 @@ const ProductsCard = ({data, key}) => {
 
   // Ensure there are ratings to avoid division by zero
   const averageRating =
-    ratings?.length > 0
-      ? ratings?.reduce((acc, rating) => acc + rating, 0) / ratings?.length
-      : 0;
+    ratings?.length > 0 ? ratings?.reduce((acc, rating) => acc + rating, 0) / ratings?.length : 0;
   const handlePress = () => {
-    navigation.navigate('ProductDetails', {data});
+    navigation.navigate('ProductDetails', { data });
   };
 
   const handleAddToCart = () => {
-    const discountPrice = calculateActualPriceBasedOnDiscount(
-      data.price,
-      data.discount || 0,
-    );
-    dispatch(addProduct({...data, quantity: 1, discountPrice}));
+    const discountPrice = calculateActualPriceBasedOnDiscount(data.price, data.discount || 0);
+    dispatch(addProduct({ ...data, quantity: 1, discountPrice }));
   };
 
   const handleAddRemoveActions = async () => {
@@ -90,15 +83,10 @@ const ProductsCard = ({data, key}) => {
     setWishlistLoading(true);
     try {
       const userDetailsString = await AsyncStorage.getItem('userDetails');
-      const userDetails = userDetailsString
-        ? JSON.parse(userDetailsString)
-        : null;
-      const requestBody = {variationId: data.id};
+      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
+      const requestBody = { variationId: data.id };
 
-      const response = await apiService.addToWishlist(
-        userDetails.id,
-        requestBody,
-      );
+      const response = await apiService.addToWishlist(userDetails.id, requestBody);
 
       if (response.data) {
         await updateUser();
@@ -116,15 +104,10 @@ const ProductsCard = ({data, key}) => {
     setWishlistLoading(true);
     try {
       const userDetailsString = await AsyncStorage.getItem('userDetails');
-      const userDetails = userDetailsString
-        ? JSON.parse(userDetailsString)
-        : null;
-      const requestBody = {variationId: data.id};
+      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
+      const requestBody = { variationId: data.id };
 
-      const response = await apiService.removeWishlist(
-        userDetails.id,
-        requestBody,
-      );
+      const response = await apiService.removeWishlist(userDetails.id, requestBody);
 
       if (response.data) {
         console.log('response', response.data);
@@ -142,12 +125,8 @@ const ProductsCard = ({data, key}) => {
   const updateUser = async () => {
     try {
       const userDetailsString = await AsyncStorage.getItem('userDetails');
-      const userDetailsTemp = userDetailsString
-        ? JSON.parse(userDetailsString)
-        : null;
-      const userDetailsResponse = await apiService.getUserDetails(
-        userDetailsTemp.id,
-      );
+      const userDetailsTemp = userDetailsString ? JSON.parse(userDetailsString) : null;
+      const userDetailsResponse = await apiService.getUserDetails(userDetailsTemp.id);
       if (userDetailsResponse.data) {
         dispatch(userSlice.actions.userLogin(userDetailsResponse.data));
 
@@ -157,8 +136,8 @@ const ProductsCard = ({data, key}) => {
 
         if (products && userDetailsData && userDetailsData.FavouriteProd) {
           const FilteredProducts =
-            products?.filter(product =>
-              userDetailsData.FavouriteProd.includes(product.id.toString()),
+            products?.filter((product) =>
+              userDetailsData.FavouriteProd.includes(product.id.toString())
             ) || [];
 
           dispatch(wishlistSlice.actions.updateWishlist(FilteredProducts));
@@ -169,9 +148,7 @@ const ProductsCard = ({data, key}) => {
 
   useEffect(() => {
     if (userDetails && userDetails.FavouriteProd) {
-      const isProductFavorited = userDetails.FavouriteProd.includes(
-        data.id.toString(),
-      );
+      const isProductFavorited = userDetails.FavouriteProd.includes(data.id.toString());
       setWishlisted(isProductFavorited);
     }
   }, [userDetails]);
@@ -179,10 +156,12 @@ const ProductsCard = ({data, key}) => {
     <Pressable
       className={`w-[90%] bg-white rounded-md shadow-md p-2 mb-5 relative border border-gray-200 p-3`}
       onPress={handlePress}
-      key={key}>
+      key={key}
+    >
       <TouchableOpacity
         className="absolute z-20 rounded-full bg-[#dee2e6] p-0.5 top-4 right-4 "
-        onPress={handleAddRemoveActions}>
+        onPress={handleAddRemoveActions}
+      >
         {wishlistloading ? (
           <ActivityIndicator />
         ) : wishlisted ? (
@@ -197,15 +176,11 @@ const ProductsCard = ({data, key}) => {
           uri: `${data.images[0]}`,
         }}
       />
-      <Text className="text-black text-sm font-semibold leading-4 mt-2">
-        {data?.name}
-      </Text>
+      <Text className="text-black text-sm font-semibold leading-4 mt-2">{data?.name}</Text>
       <Text className="text-black text-base  leading-4 mt-2">
         <Text className="font-bold"> ₹{data?.price}</Text> /piece
       </Text>
-      <Text className="text-[#cd1818] font-sm font-semibold leading-4 mt-2">
-        (₹6 /sq.ft)
-      </Text>
+      <Text className="text-[#cd1818] font-sm font-semibold leading-4 mt-2">(₹6 /sq.ft)</Text>
       <View className="flex-row mt-1 items-center">
         <View className="bg-[#09881d] flex-row items-center rounded-full px-2 py-1 justify-center">
           <Text className="text-white text-sm mr-2">
@@ -213,16 +188,13 @@ const ProductsCard = ({data, key}) => {
           </Text>
           <Ionicons name="star" className="text-white " size={15} />
         </View>
-        <Text className="text-gray-500 ml-2">
-          ({data.Review.length} reviews)
-        </Text>
+        <Text className="text-gray-500 ml-2">({data.Review.length} reviews)</Text>
       </View>
       <TouchableOpacity
         className="bg-[#e2e3e5] hover:bg-[#b3b4b7] rounded-md flex-row  justify-center items-center py-2 mt-2  "
-        onPress={handleAddToCart}>
-        <Text className="text-black text-lg font-semibold mr-2">
-          Add To Cart
-        </Text>
+        onPress={handleAddToCart}
+      >
+        <Text className="text-black text-lg font-semibold mr-2">Add To Cart</Text>
         <Ionicons name="cart" color="#000" size={25} />
       </TouchableOpacity>
     </Pressable>

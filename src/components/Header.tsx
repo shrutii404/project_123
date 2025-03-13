@@ -1,9 +1,9 @@
-import {View, Text} from 'react-native';
+import { View, Text } from 'react-native';
 import React from 'react';
 import HeaderRight from './HeaderRight';
-import {Image} from 'react-native-svg';
+import { Image } from 'react-native-svg';
 
-const Header = ({navigation}) => ({
+const Header = ({ navigation }) => ({
   headerTitle: '',
   headerLeft: () => (
     <View className="flex flex-row items-center">

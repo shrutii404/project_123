@@ -1,20 +1,16 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, Dimensions, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Dimensions, TouchableOpacity } from 'react-native';
 import Confetti from 'react-native-confetti';
-import {ArrowLeft, Check} from 'phosphor-react-native';
+import { ArrowLeft, Check } from 'phosphor-react-native';
 
-import {useNavigation} from '@react-navigation/native';
-import {useDispatch} from 'react-redux';
-import {cartSlice} from '../../store/slices/cartSlice';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { cartSlice } from '../../store/slices/cartSlice';
 
 const CheckoutSuccess = () => {
   const dispatch = useDispatch();
-  const [windowWidth, setWindowWidth] = useState(
-    Dimensions.get('window').width,
-  );
-  const [windowHeight, setWindowHeight] = useState(
-    Dimensions.get('window').height,
-  );
+  const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
+  const [windowHeight, setWindowHeight] = useState(Dimensions.get('window').height);
 
   const navigation = useNavigation();
 
@@ -41,12 +37,9 @@ const CheckoutSuccess = () => {
         <View className="relative w-24 h-24 flex items-center justify-center bg-purple-600 rounded-full">
           <Check size={40} color="white" className="absolute" />
         </View>
-        <Text className="text-xl font-semibold text-gray-700">
-          Congratulations!
-        </Text>
+        <Text className="text-xl font-semibold text-gray-700">Congratulations!</Text>
         <Text className="text-md md:text-2xl text-center">
-          Your order has been placed successfully. Thank you for shopping with
-          us!
+          Your order has been placed successfully. Thank you for shopping with us!
         </Text>
       </View>
 
@@ -56,7 +49,8 @@ const CheckoutSuccess = () => {
             dispatch(cartSlice.actions.clearCart());
             navigation.navigate('Home');
           }}
-          className="flex-row items-center gap-2 p-3 border border-black rounded-full">
+          className="flex-row items-center gap-2 p-3 border border-black rounded-full"
+        >
           <ArrowLeft size={24} color="black" />
           <Text className="text-lg text-black">Go Back to Home</Text>
         </TouchableOpacity>

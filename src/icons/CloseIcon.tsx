@@ -1,10 +1,10 @@
 import React from 'react';
-import {Svg, Path} from 'react-native-svg';
-import {View} from 'react-native';
+import { Svg, Path } from 'react-native-svg';
+import { View } from 'react-native';
 
 const CloseIcon = () => {
   return (
-    <View style={{margin: 4}}>
+    <View style={{ margin: 4 }}>
       {/* Adjust margin or styling as needed */}
       <Svg
         width={15} // Adjust width as needed

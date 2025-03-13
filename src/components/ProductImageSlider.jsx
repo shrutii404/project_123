@@ -1,8 +1,8 @@
-import {View, Text, Image} from 'react-native';
+import { View, Text, Image } from 'react-native';
 import React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const ProductImageSlider = ({images}) => {
+const ProductImageSlider = ({ images }) => {
   return (
     <View className="border-b pb-5 border-gray-200">
       <View className="rounded-md bg-white shadow-xl border border-slate-100  p-3">

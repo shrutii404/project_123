@@ -1,7 +1,4 @@
-export const calculateActualPriceBasedOnDiscount = (
-  priceAfterDiscount,
-  discountRate,
-) => {
+export const calculateActualPriceBasedOnDiscount = (priceAfterDiscount, discountRate) => {
   if (discountRate === 0) {
     return priceAfterDiscount;
   }

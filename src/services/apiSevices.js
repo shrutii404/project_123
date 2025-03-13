@@ -11,15 +11,13 @@ const api = axios.create({
 
 // Request interceptor
 api.interceptors.request.use(
-  async config => {
+  async (config) => {
     try {
       // Retrieve user details from AsyncStorage
       const userDetailsString = await AsyncStorage.getItem('userDetails');
 
       // Parse the retrieved string to an object
-      const userDetails = userDetailsString
-        ? JSON.parse(userDetailsString)
-        : null;
+      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
 
       // Extract the token
       const token = userDetails ? userDetails.token : null;
@@ -35,15 +33,15 @@ api.interceptors.request.use(
 
     return config;
   },
-  error => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 const apiService = {
-  loginUser: data => api.post('login', data),
+  loginUser: (data) => api.post('login', data),
 
-  verifyUser: data => api.post('login/verifyOTP', data),
+  verifyUser: (data) => api.post('login/verifyOTP', data),
 
-  resendOTP: data => api.post('login/resendOTP', data),
+  resendOTP: (data) => api.post('login/resendOTP', data),
 
   getCategories: (id = null) => {
     const endpoint = id ? `api/categories/${id}` : 'api/categories';
@@ -56,9 +54,7 @@ const apiService = {
   },
 
   getProductVariations: (id = null) => {
-    const endpoint = id
-      ? `api/product-variations/${id}`
-      : 'api/product-variations';
+    const endpoint = id ? `api/product-variations/${id}` : 'api/product-variations';
     return api.get(endpoint);
   },
 
@@ -79,22 +75,22 @@ const apiService = {
     return api.post(`api/users/${userId}/removeWishlist`, data);
   },
 
-  addAddress: data => {
+  addAddress: (data) => {
     return api.post(`api/address`, data);
   },
   updateAddress: (id, data) => {
     return api.put(`api/address/${id}`, data);
   },
-  removeAddress: id => {
+  removeAddress: (id) => {
     return api.delete(`api/address/${id}`);
   },
-  getDistance: data => {
+  getDistance: (data) => {
     return api.post(`/api/getDistance/isAvailable`, data);
   },
-  phonepePayment: data => {
+  phonepePayment: (data) => {
     return api.post(`/api/phonePay/order`, data);
   },
-  getOrders: userId => {
+  getOrders: (userId) => {
     return api.get(`/api/orderView/${userId}`);
   },
 };

@@ -1,14 +1,14 @@
-import {View, Text, ScrollView} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import {useGetProductVariationsQuery} from '../../store/slices/apiSlice';
+import { View, Text, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useGetProductVariationsQuery } from '../../store/slices/apiSlice';
 import ProductsCard from '../../components/ProductsCard';
-import {Image} from 'react-native-svg';
-import {wishlistSlice} from '../../store/slices/wishlistSlice';
+import { Image } from 'react-native-svg';
+import { wishlistSlice } from '../../store/slices/wishlistSlice';
 
 const WishlistScreen = () => {
-  const userDetails = useSelector(state => state.user.user);
-  const wishlist = useSelector(state => state.wishlist.items);
+  const userDetails = useSelector((state) => state.user.user);
+  const wishlist = useSelector((state) => state.wishlist.items);
   const dispatch = useDispatch();
   const {
     data: products,
@@ -20,9 +20,8 @@ const WishlistScreen = () => {
   useEffect(() => {
     if (products && userDetails && userDetails.FavouriteProd) {
       const FilteredProducts =
-        products?.filter(product =>
-          userDetails.FavouriteProd.includes(product.id.toString()),
-        ) || [];
+        products?.filter((product) => userDetails.FavouriteProd.includes(product.id.toString())) ||
+        [];
 
       dispatch(wishlistSlice.actions.updateWishlist(FilteredProducts));
     }
@@ -30,9 +29,7 @@ const WishlistScreen = () => {
 
   return (
     <ScrollView className="bg-white  ">
-      <Text className="text-2xl font-semibold mb-4 text-center text-black mt-8">
-        Your Wishlist
-      </Text>
+      <Text className="text-2xl font-semibold mb-4 text-center text-black mt-8">Your Wishlist</Text>
       <View className="items-center w-full">
         {wishlist && wishlist.length > 0 ? (
           wishlist.map((product, index) => (

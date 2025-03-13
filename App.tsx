@@ -1,33 +1,19 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import {Image, TouchableOpacity, View} from 'react-native';
 import HomeScreen from './src/screens/home/HomeScreen';
 import LoginScreen from './src/screens/auth/LoginScreen';
-// import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import SearchIcon from './src/icons/SearchIcon';
-import ShakehandIcon from './src/icons/ShakehandIcon';
-import CartIcon from './src/icons/CartIcon';
-import FaviroteIcon from './src/icons/FaviroteIcon';
-import UserIcon from './src/icons/UserIcon';
 import MenuIcon from './src/icons/MenuIcon';
-import CatalogIcons from './src/icons/CatalogIcons';
-import { Provider } from 'react-redux';
+import {Provider} from 'react-redux';
 import store from './src/store';
-import { ModalProvider, useModal } from './src/context/ModalContext';
+import {ModalProvider, useModal} from './src/context/ModalContext';
 import HeaderRight from './src/components/HeaderRight';
-import ProductsScreen from './src/screens/productdetails/ProductsScreen';
+import ProductsScreen from './src/screens/productdetails/ProductsScreen.jsx';
 import ProductDetailsScreen from './src/screens/productdetails/ProductDetailsScreen';
 import CartScreen from './src/screens/cart/CartScreen';
-import { SearchProvider } from './src/context/SearchContext';
+import {SearchProvider} from './src/context/SearchContext';
 import SearchResultScreen from './src/screens/search/SearchResultScreen';
 import WishlistScreen from './src/screens/wishlist/WishlistScreen';
 import ManageProfileScreen from './src/screens/profile/ManageProfileScreen';
@@ -35,15 +21,14 @@ import CheckoutScreen from './src/screens/checkout/CheckoutScreen';
 import ShopCartScreen from './src/screens/cart/ShopCartScreen';
 import FailureScreen from './src/screens/checkout/FailureScreen';
 import SuccessScreen from './src/screens/checkout/SuccessScreen';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 import PolicyScreen from './src/screens/PolicyScreen/PolicyScreen';
 import TermsAndServices from './src/screens/TermsAndServices/TermsAndServices';
 import ShippingPolicy from './src/screens/ShippingPolicy/ShippingPolicy';
 import RefundPolicy from './src/screens/RefundPolicy/RefundPolicy';
 import AboutScreen from './src/screens/AboutScreen/AboutScreen';
 
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Importing icons
-
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -54,15 +39,14 @@ function HomeStack() {
       <Stack.Screen
         name="Home"
         component={HomeScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
                 <MenuIcon />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -78,18 +62,17 @@ function HomeStack() {
       <Stack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Products"
         component={ProductsScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <MenuIcon />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -105,13 +88,12 @@ function HomeStack() {
       <Stack.Screen
         name="ProductDetails"
         component={ProductDetailsScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <MenuIcon />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -127,18 +109,17 @@ function HomeStack() {
       <Stack.Screen
         name="Cart"
         component={CartScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="SearchResults"
         component={SearchResultScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <MenuIcon />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -154,13 +135,12 @@ function HomeStack() {
       <Stack.Screen
         name="Wishlist"
         component={WishlistScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <MenuIcon />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -176,13 +156,12 @@ function HomeStack() {
       <Stack.Screen
         name="ManageProfile"
         component={ManageProfileScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <MenuIcon />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -198,13 +177,12 @@ function HomeStack() {
       <Stack.Screen
         name="Shopcart"
         component={ShopCartScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <MenuIcon />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -220,13 +198,12 @@ function HomeStack() {
       <Stack.Screen
         name="Checkout"
         component={CheckoutScreen}
-        options={({ navigation }) => ({
+        options={({navigation}) => ({
           headerTitle: '',
           headerLeft: () => (
             <View className="flex flex-row items-center">
               <MenuIcon />
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Home')}>
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
                 <Image
                   source={{
                     uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
@@ -242,15 +219,15 @@ function HomeStack() {
       <Stack.Screen
         name="Success"
         component={SuccessScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
       <Stack.Screen
         name="Failure"
         component={FailureScreen}
-        options={{ headerShown: false }}
+        options={{headerShown: false}}
       />
     </Stack.Navigator>
-  )
+  );
 }
 
 function App(): React.JSX.Element {
@@ -259,41 +236,27 @@ function App(): React.JSX.Element {
       <ModalProvider>
         <SearchProvider>
           <NavigationContainer>
-            {/* <Drawer.Navigator initialRouteName="HomeStack">
-              <Drawer.Screen
-                name="Home"
-                component={HomeStack} // Use a stack for Home
-                options={{ headerShown: false }} // Hide the header for the drawer screen
-              />
-              <Drawer.Screen name="About" component={AboutScreen} /> 
-              <Drawer.Screen name="Policy" component={PolicyScreen} /> 
-              <Drawer.Screen name="Terms & Services" component={TermsAndServices} /> 
-              <Drawer.Screen name="Shipping Policy" component={ShippingPolicy} /> 
-              <Drawer.Screen name="Refund Policy" component={RefundPolicy} /> 
-            </Drawer.Navigator> */}
-             <Drawer.Navigator
+            <Drawer.Navigator
               initialRouteName="HomeStack"
               screenOptions={{
                 drawerStyle: {
                   backgroundColor: '#f4f4f4', // Light background
                   width: 240, // Drawer width
                 },
-                // headerShown: false, // Hide the header for all drawer screens
                 drawerActiveTintColor: '#6200EE', // Active item color
                 drawerInactiveTintColor: '#555', // Inactive item color
                 drawerLabelStyle: {
                   fontSize: 16, // Label font size
                 },
-              }}
-            >
+              }}>
               {/* Home Screen */}
               <Drawer.Screen
                 name="Home"
                 component={HomeStack} // Use a stack for Home
                 options={{
                   drawerLabel: 'Home',
-                  headerShown:false,
-                  drawerIcon: ({ color, size }) => (
+                  headerShown: false,
+                  drawerIcon: ({color, size}) => (
                     <Icon name="home" color={color} size={size} />
                   ),
                 }}
@@ -305,7 +268,7 @@ function App(): React.JSX.Element {
                 component={AboutScreen}
                 options={{
                   drawerLabel: 'About Us',
-                  drawerIcon: ({ color, size }) => (
+                  drawerIcon: ({color, size}) => (
                     <Icon name="info" color={color} size={size} />
                   ),
                 }}
@@ -317,7 +280,7 @@ function App(): React.JSX.Element {
                 component={PolicyScreen}
                 options={{
                   drawerLabel: 'Privacy Policy',
-                  drawerIcon: ({ color, size }) => (
+                  drawerIcon: ({color, size}) => (
                     <Icon name="lock" color={color} size={size} />
                   ),
                 }}
@@ -329,7 +292,7 @@ function App(): React.JSX.Element {
                 component={TermsAndServices}
                 options={{
                   drawerLabel: 'Terms & Services',
-                  drawerIcon: ({ color, size }) => (
+                  drawerIcon: ({color, size}) => (
                     <Icon name="description" color={color} size={size} />
                   ),
                 }}
@@ -341,7 +304,7 @@ function App(): React.JSX.Element {
                 component={ShippingPolicy}
                 options={{
                   drawerLabel: 'Shipping Policy',
-                  drawerIcon: ({ color, size }) => (
+                  drawerIcon: ({color, size}) => (
                     <Icon name="local-shipping" color={color} size={size} />
                   ),
                 }}
@@ -353,7 +316,7 @@ function App(): React.JSX.Element {
                 component={RefundPolicy}
                 options={{
                   drawerLabel: 'Refund Policy',
-                  drawerIcon: ({ color, size }) => (
+                  drawerIcon: ({color, size}) => (
                     <Icon name="attach-money" color={color} size={size} />
                   ),
                 }}
@@ -365,7 +328,5 @@ function App(): React.JSX.Element {
     </Provider>
   );
 }
-
-
 
 export default App;

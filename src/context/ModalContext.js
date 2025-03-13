@@ -1,13 +1,13 @@
-import React, {createContext, useState} from 'react';
-import {Modal, View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import React, { createContext, useState } from 'react';
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const ModalContext = createContext();
 
-export const ModalProvider = ({children}) => {
+export const ModalProvider = ({ children }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState(null);
 
-  const showModal = content => {
+  const showModal = (content) => {
     setModalContent(content);
     setModalVisible(true);
   };
@@ -18,13 +18,9 @@ export const ModalProvider = ({children}) => {
   };
 
   return (
-    <ModalContext.Provider value={{showModal, hideModal}}>
+    <ModalContext.Provider value={{ showModal, hideModal }}>
       {children}
-      <Modal
-        transparent
-        visible={modalVisible}
-        animationType="fade"
-        onRequestClose={hideModal}>
+      <Modal transparent visible={modalVisible} animationType="fade" onRequestClose={hideModal}>
         <TouchableOpacity style={styles.overlay} onPress={hideModal}>
           <View style={styles.modal}>{modalContent}</View>
         </TouchableOpacity>
@@ -62,7 +58,7 @@ const styles = StyleSheet.create({
     elevation: 5,
     shadowColor: '#000',
     shadowOpacity: 0.3,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
   },
 });

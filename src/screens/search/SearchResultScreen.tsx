@@ -1,7 +1,7 @@
-import {View, Text, ScrollView} from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import React from 'react';
 import SearchLoader from '../../components/SearchLoader';
-import {useSearchBox} from '../../context/SearchContext';
+import { useSearchBox } from '../../context/SearchContext';
 import ProductsCard from '../../components/ProductsCard';
 import SearchBar from '../../components/SearchBar';
 
@@ -13,18 +13,16 @@ const SearchNotFound = () => {
           Can't Find What You're Looking For?
         </Text>
         <Text className="text-lg mb-4 text-center text-black">
-          We understand that finding the perfect product can sometimes be
-          challenging. If you're having trouble locating what you need, don't
-          worry!
+          We understand that finding the perfect product can sometimes be challenging. If you're
+          having trouble locating what you need, don't worry!
         </Text>
         <Text className="text-lg mb-4 text-center font-bold text-black">
-          Share your product requirements with us, and let Hurla help you source
-          it at the best price. We can deliver right to your doorstep, ensuring
-          a hassle-free experience.
+          Share your product requirements with us, and let Hurla help you source it at the best
+          price. We can deliver right to your doorstep, ensuring a hassle-free experience.
         </Text>
         <Text className="text-lg text-center text-black">
-          For personalized assistance, please reach out to us with your details,
-          and we'll be happy to help you find exactly what you're looking for.
+          For personalized assistance, please reach out to us with your details, and we'll be happy
+          to help you find exactly what you're looking for.
         </Text>
       </View>
     </ScrollView>
@@ -32,7 +30,7 @@ const SearchNotFound = () => {
 };
 
 const SearchResultScreen = () => {
-  const {loading, searchResults, searchQuery, searchVisible} = useSearchBox();
+  const { loading, searchResults, searchQuery, searchVisible } = useSearchBox();
   return (
     <ScrollView className="flex-1 bg-white">
       <SearchBar searchVisible={searchVisible} />
@@ -44,7 +42,7 @@ const SearchResultScreen = () => {
       )}
       {searchResults && searchResults.length > 0 ? (
         <View className="w-full items-center">
-          {searchResults.map(product => (
+          {searchResults.map((product) => (
             <ProductsCard data={product} />
           ))}
         </View>

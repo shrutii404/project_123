@@ -1,14 +1,8 @@
-import React, {useEffect, useState, useCallback} from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-import {useSelector} from 'react-redux';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useSelector } from 'react-redux';
 import apiService from '../services/apiSevices';
-import {Eye} from 'phosphor-react-native';
+import { Eye } from 'phosphor-react-native';
 import ShimmerEffect from './ShimmerEffect';
 
 export type Order = {
@@ -34,7 +28,7 @@ export type Order = {
 const OrderTable = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const userDetails = useSelector(state => state.user.user);
+  const userDetails = useSelector((state) => state.user.user);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -55,9 +49,7 @@ const OrderTable = () => {
   }, [fetchOrders]);
 
   const renderTableRow = (order: Order) => (
-    <View
-      key={order.id}
-      className="flex-row border border-t-0 border-gray-300 justify-between">
+    <View key={order.id} className="flex-row border border-t-0 border-gray-300 justify-between">
       <View className="flex-1  border-gray-300 p-2">
         <Text className="text-xs text-center text-black">{order.tranId}</Text>
       </View>
@@ -65,8 +57,7 @@ const OrderTable = () => {
         <Text className="text-xs text-center text-black">{order.status}</Text>
       </View>
       <View className="flex-1  border-gray-300 p-2">
-        <TouchableOpacity
-          disabled={!order.invoice.length || order.status !== 'DELIVERED'}>
+        <TouchableOpacity disabled={!order.invoice.length || order.status !== 'DELIVERED'}>
           <Text className="text-xs text-center text-black">
             {order.invoice.length && order.status === 'DELIVERED'
               ? 'View Invoice'
@@ -83,9 +74,7 @@ const OrderTable = () => {
         </Text>
       </View>
       <View className="flex-1  border-gray-300 p-2">
-        <Text className="text-xs text-center text-black">
-          {order.paymentMethod}
-        </Text>
+        <Text className="text-xs text-center text-black">{order.paymentMethod}</Text>
       </View>
       <View className="flex-1  border-gray-300 p-2">
         <Text className="text-xs text-center text-black">
@@ -96,7 +85,8 @@ const OrderTable = () => {
         <TouchableOpacity
           onPress={() => {
             /* Navigate to order details */
-          }}>
+          }}
+        >
           <Eye size={18} color="#000" />
         </TouchableOpacity>
       </View>
@@ -118,39 +108,25 @@ const OrderTable = () => {
           {/* Table Header */}
           <View className="flex-row border border-gray-300 rounded-tl rounded-tr w-full">
             <View className="flex-row p-2 border-gray-300 px-5 justify-center  ml-5">
-              <Text className="font-bold text-black text-xs text-center">
-                Order Id
-              </Text>
+              <Text className="font-bold text-black text-xs text-center">Order Id</Text>
             </View>
             <View className="flex-1 p-2 border-gray-300 px-5 ml-10">
-              <Text className="font-bold text-black  text-xs text-center">
-                Status
-              </Text>
+              <Text className="font-bold text-black  text-xs text-center">Status</Text>
             </View>
             <View className="flex-1 p-2 border-gray-300 ml-8">
-              <Text className="font-bold text-black  text-xs text-center">
-                Access Invoice
-              </Text>
+              <Text className="font-bold text-black  text-xs text-center">Access Invoice</Text>
             </View>
             <View className="flex-1 p-2 border-gray-300">
-              <Text className="font-bold text-black  text-xs text-center">
-                Total Amount
-              </Text>
+              <Text className="font-bold text-black  text-xs text-center">Total Amount</Text>
             </View>
             <View className="flex-1 p-2 border-gray-300">
-              <Text className="font-bold text-black  text-xs text-center">
-                Payment Method
-              </Text>
+              <Text className="font-bold text-black  text-xs text-center">Payment Method</Text>
             </View>
             <View className="flex-1 p-2 border-gray-300">
-              <Text className="font-bold text-black  text-xs text-center">
-                Order Date
-              </Text>
+              <Text className="font-bold text-black  text-xs text-center">Order Date</Text>
             </View>
             <View className="flex-1 p-2 border-gray-300">
-              <Text className="font-bold text-black  text-xs text-center">
-                View Details
-              </Text>
+              <Text className="font-bold text-black  text-xs text-center">View Details</Text>
             </View>
           </View>
           {/* Table Rows */}
