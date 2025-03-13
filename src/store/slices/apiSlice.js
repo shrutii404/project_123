@@ -1,6 +1,7 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import {apiEndpoint} from '../../utils/constants';
 
-const baseUrl = 'https://api.hurlahardware.com/';
+const baseUrl = apiEndpoint;
 
 const baseQuery = fetchBaseQuery({
   baseUrl,

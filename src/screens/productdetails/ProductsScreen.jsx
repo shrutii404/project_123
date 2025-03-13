@@ -1,68 +1,47 @@
-import {
-  View,
-  Text,
-  ImageBackground,
-  ScrollView,
-  Dimensions,
-  ActivityIndicator,
-} from 'react-native';
+import {View, Text, ImageBackground, ScrollView} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ProductDiscovery from '../../components/ProductDiscovery';
 import ProductsCard from '../../components/ProductsCard';
-import HomeFooter from '../../components/HomeFooter';
-import LinearGradient from 'react-native-linear-gradient';
-import {createGradientShimmer} from 'react-native-gradient-shimmer';
-
-import {useGetProductVariationsQuery} from '../../store/slices/apiSlice';
 import axios from 'axios';
 import ShimmerEffect from '../../components/ShimmerEffect';
 import SearchBar from '../../components/SearchBar';
 import {useSearchBox} from '../../context/SearchContext';
-import SearchLoader from '../../components/SearchLoader';
+import {apiEndpoint} from '../../utils/constants';
+import {useNavigation} from '@react-navigation/native';
 
-// const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-
-const ShimmerPlaceholder = createGradientShimmer({
-  backgroundColor: '#edf5fd',
-  highlightColor: '#f1f7fe',
-  LinearGradientComponent: LinearGradient,
-});
-
-const screenWidth = Dimensions.get('window').width;
-
-const ProductsScreen = ({route, navigation}) => {
+const ProductsScreen = ({route}) => {
   const [loading, setLoading] = useState(false);
   const [childrenData, setChildrenData] = useState([]);
   const {searchVisible} = useSearchBox();
+  const navigation = useNavigation();
 
   const {Type, category, data, imageData} = route.params.data;
-
   const imageuri = {uri: data.image};
 
-  const getChildrenData = async () => {
+  const getChildrenData = async (currentType, currentCategory) => {
     try {
       setLoading(true);
-
-      const url = `https://ecommercedev-production.up.railway.app/api/product-variations?${
-        imageData[Type].attributeType + '=' + Type
-      }&category=${category}`;
-
+      const url = `${apiEndpoint}api/product-variations?${imageData[currentType].attributeType}=${currentType}&category=${currentCategory}`;
       const response = await axios.get(url);
       if (response.data) {
         setChildrenData(response.data);
       }
-      setLoading(false); // Set loading to false once data is fetched
     } catch (error) {
       console.error('Error fetching children data:', error);
-      setLoading(false); // Set loading to false in case of an error
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (Type && category) {
-      getChildrenData(Type, category);
-    }
+    getChildrenData(Type, category);
   }, [Type, category]);
+
+  const handlePress = (currentType, currentCategory) => {
+    navigation.navigate('Products', {
+      data: {Type: currentType, category: currentCategory, data, imageData},
+    });
+  };
 
   return (
     <ScrollView className="w-full h-full bg-white">
@@ -90,17 +69,12 @@ const ProductsScreen = ({route, navigation}) => {
             category={category}
             data={data}
             imageData={imageData}
+            handlePress={handlePress}
           />
           <View className="items-center w-full">
             {childrenData &&
               childrenData.map((item, index) => {
-                return (
-                  <ProductsCard
-                    data={item}
-                    key={index}
-                    key={`product-${index}`}
-                  />
-                );
+                return <ProductsCard data={item} key={index} />;
               })}
           </View>
           {/* <HomeFooter /> */}

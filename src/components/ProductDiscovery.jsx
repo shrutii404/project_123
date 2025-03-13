@@ -1,7 +1,7 @@
 import {View, Text, Image, Pressable, ScrollView} from 'react-native';
 import React from 'react';
 
-const ProductDiscovery = ({Type, category, data, imageData}) => {
+const ProductDiscovery = ({Type, category, data, imageData, handlePress}) => {
   return (
     <View className="items-center my-10">
       <Text className="text-lg font-bold text-gray-800">
@@ -15,11 +15,13 @@ const ProductDiscovery = ({Type, category, data, imageData}) => {
         {data.children[0].valuesAvailable.length > 0 &&
           data.children[0].valuesAvailable.map(item => {
             return (
-              <Pressable className="items-center">
+              <Pressable
+                className="items-center"
+                onPress={() => handlePress(item, data.name)}>
                 <Image
                   className="h-20 w-20 bg-black rounded-xl"
                   source={{
-                    uri: `${imageData[item].image}`,
+                    uri: `${imageData[item]?.image}`,
                   }}
                 />
                 <Text className="text-gray-800 text-[10px] font-medium mt-1">

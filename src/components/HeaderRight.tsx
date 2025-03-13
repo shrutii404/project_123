@@ -76,8 +76,6 @@ const HeaderRight = ({navigation}) => {
       <TouchableOpacity onPress={() => toggleSearchBar()}>
         <SearchIcon />
       </TouchableOpacity>
-
-      <ShakehandIcon />
       <TouchableOpacity
         onPress={() => navigation.navigate('Cart')}
         className="relative">

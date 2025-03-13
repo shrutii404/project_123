@@ -13,6 +13,7 @@ import ShimmerEffect from '../../components/ShimmerEffect';
 import HomeFAQQuestions from '../../components/HomeFAQQuestions';
 import SearchBar from '../../components/SearchBar';
 import {useSearchBox} from '../../context/SearchContext';
+import {placeHolderImageSquare} from '../../utils/constants';
 
 function HomeScreen() {
   const [parentdata, setParentdata] = useState([]);
@@ -73,10 +74,10 @@ function HomeScreen() {
                   type => matchingItem.attributes[type] === value,
                 );
                 tempimageData[value] = {
-                  image: matchingItem.images[0],
+                  image: matchingItem.images[0] ?? placeHolderImageSquare,
                   attributeType: matchedAttributeType,
                   attribute: value,
-                }; // Assuming you want the first image
+                };
               }
             });
           }
@@ -115,7 +116,6 @@ function HomeScreen() {
         {parentdata.map((item, index) => (
           <HomeSubsection key={index} data={item} imageData={imageData} />
         ))}
-
         <View className="items-start w-[90%] mt-4">
           <Text className="text-black mb-4 font-semibold">
             Shop Best for Your Walls
@@ -126,7 +126,6 @@ function HomeScreen() {
             ))}
           </View>
         </View>
-        <View className="h-32"></View>
         <View className="bg-[#F7F7F7] w-full py-10 items-center ">
           <HomeServicesInfo />
         </View>
