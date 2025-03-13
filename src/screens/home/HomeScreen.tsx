@@ -3,11 +3,9 @@ import HomeSubsection from '../../components/HomeSubsection';
 import HomeWallCards from '../../components/HomeWallCards';
 import HomeServicesInfo from '../../components/HomeServicesInfo';
 import HomeCarousel from '../../components/HomeCarousel';
-import HomeAccordian from '../../components/HomeAccordian';
 import HomeFooter from '../../components/HomeFooter';
 import {
   useGetCategoriesQuery,
-  useGetProductsQuery,
   useGetProductVariationsQuery,
 } from '../../store/slices/apiSlice';
 import {useEffect, useState} from 'react';
@@ -25,19 +23,17 @@ function HomeScreen() {
     data: categories,
     error: categorieserror,
     isLoading: categoryLoading,
-  } = useGetCategoriesQuery();
+  } = useGetCategoriesQuery('');
   const {
     data: products,
     error: productserror,
     isLoading: productLoading,
-  } = useGetProductVariationsQuery();
+  } = useGetProductVariationsQuery('');
 
   useEffect(() => {
     if (categories && products) {
-      // Handle the case where categories or products are not loaded yet
       if (categoryLoading || productLoading) return;
 
-      // Check if categories and products are valid arrays
       if (Array.isArray(categories) && Array.isArray(products)) {
         const parent = categories.filter(category => category.parentId == null);
         parent.sort((a, b) => a.id - b.id);
@@ -56,17 +52,10 @@ function HomeScreen() {
 
         setParentdata(result);
 
-        // Process products to create imageData
         const tempimageData = {};
-        const attributeTypes = [
-          'Type',
-          'Paint_Type',
-          'Paint_Brand',
-          'Wall_Type',
-          'Tool_Type',
-          'AD_BRAND',
-          'Lami_Type',
-        ];
+        const attributeTypes = result.flatMap(r =>
+          r.children.map(child => child.name),
+        );
 
         result.forEach(parentItem => {
           if (parentItem.children.length > 0) {
@@ -107,8 +96,6 @@ function HomeScreen() {
   }
 
   if (categorieserror || productserror) {
-    console.log('categorieserror>>', categorieserror);
-    console.log('productserror>>', productserror);
     return (
       <Text className="text-black">
         Error: {categorieserror?.message || productserror?.message}

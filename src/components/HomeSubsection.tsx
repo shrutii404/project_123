@@ -14,7 +14,7 @@ const HomeSubsection = ({data, imageData}) => {
     <View className="w-full ">
       <View className="flex flex-row justify-between w-[90%] mt-8 ml-5">
         <Text className="text-black font-semibold">{data.name}</Text>
-        <Text className="text-gray-400">Seeall</Text>
+        <Text className="text-gray-400">See all</Text>
       </View>
       <ScrollView horizontal>
         <View className="flex flex-row gap-3 mt-3 ml-2 items-start justify-start">
