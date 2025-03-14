@@ -13,7 +13,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useLoginUserMutation, useVerifyUserMutation } from '../../store/slices/apiSlice';
 import { useDispatch } from 'react-redux';
 import { userSlice } from '../../store/slices/userSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setUser } from '../../utils/user';
 
 const LoginScreen: React.FC = ({ navigation }) => {
   const [phonenumber, setPhonenumber] = useState<string>('');
@@ -91,12 +91,7 @@ const LoginScreen: React.FC = ({ navigation }) => {
       } else {
         ToastAndroid.show('Login Successfully', ToastAndroid.SHORT);
         const userDetails = response.data;
-        // Save user details to AsyncStorage
-        await AsyncStorage.setItem(
-          'userDetails',
-          JSON.stringify({ token: userDetails.token, id: userDetails.user.id })
-        );
-
+        await setUser(userDetails);
         dispatch(userSlice.actions.userLogin(userDetails.user));
       }
 

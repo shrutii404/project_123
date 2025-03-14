@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import UserCheckedIcon from '../icons/UserCheckedIcons';
 import { userSlice } from '../store/slices/userSlice';
 import { useSearchBox } from '../context/SearchContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { removeUser } from '../utils/user';
 
 const HeaderRight = ({ navigation }) => {
   const { showModal, hideModal } = useModal();
@@ -60,7 +60,7 @@ const HeaderRight = ({ navigation }) => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('userDetails');
+      await removeUser();
     } catch (e) {
       console.error('Failed to remove tokens from AsyncStorage', e);
     }
