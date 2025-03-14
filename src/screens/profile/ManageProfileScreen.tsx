@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  Button,
   ScrollView,
   Pressable,
   TextInput,

@@ -1,5 +1,5 @@
 import { View, Text, ScrollView } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useGetProductVariationsQuery } from '../../store/slices/apiSlice';
 import ProductsCard from '../../components/ProductsCard';
@@ -10,12 +10,7 @@ const WishlistScreen = () => {
   const userDetails = useSelector((state) => state.user.user);
   const wishlist = useSelector((state) => state.wishlist.items);
   const dispatch = useDispatch();
-  const {
-    data: products,
-    error: productserror,
-    isLoading: productLoading,
-  } = useGetProductVariationsQuery();
-  const [favouriteProducts, setFavouriteProducts] = useState([]);
+  const { data: products } = useGetProductVariationsQuery();
 
   useEffect(() => {
     if (products && userDetails && userDetails.FavouriteProd) {

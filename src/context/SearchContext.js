@@ -1,6 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { Modal, View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Ensure you have react-native-vector-icons installed
+import { StyleSheet } from 'react-native';
 import { useGetProductVariationsQuery } from '../store/slices/apiSlice';
 
 const SearchContext = createContext();
@@ -10,11 +9,7 @@ export const SearchProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-  const {
-    data: products,
-    error: productserror,
-    isLoading: productLoading,
-  } = useGetProductVariationsQuery();
+  const { data: products } = useGetProductVariationsQuery();
 
   const toggleSearchBar = () => {
     setSearchVisible(!searchVisible);

@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  FlatList,
-} from 'react-native';
+import { View, Text, ActivityIndicator, TouchableOpacity, Image, ScrollView } from 'react-native';
 import CartPriceCard from '../../components/CartPriceCard';
 import { CaretDown, CaretUp, SealPercent } from 'phosphor-react-native';
-import CheckoutCartCard from '../../components/CheckoutCartCard';
 import CheckoutCart from '../../components/CheckoutCart';
 
 const ShopCartScreen = () => {

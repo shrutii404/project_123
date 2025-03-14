@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lintFixAll": "eslint \"./src/**/*.{js,jsx,ts,tsx}\" --fix",
     "prettierFixAll": "prettier --write \"./src/**/*.{js,jsx,ts,tsx}\"",
-    "fix:lintPrettier": "yarn prettierFixAll && yarn lintFixAll"
+    "fix:lintPrettier": "npm run prettierFixAll && npm run lintFixAll"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.0.0",

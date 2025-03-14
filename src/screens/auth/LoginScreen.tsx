@@ -3,7 +3,6 @@ import {
   Text,
   Image,
   TextInput,
-  Button,
   TouchableOpacity,
   Alert,
   ToastAndroid,
@@ -15,7 +14,6 @@ import { useLoginUserMutation, useVerifyUserMutation } from '../../store/slices/
 import { useDispatch } from 'react-redux';
 import { userSlice } from '../../store/slices/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import apiService from '../../services/apiSevices';
 
 const LoginScreen: React.FC = ({ navigation }) => {
   const [phonenumber, setPhonenumber] = useState<string>('');

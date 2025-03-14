@@ -1,6 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import React from 'react';
-import Entypo from 'react-native-vector-icons/Entypo';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import CloseIcon from '../../icons/CloseIcon';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,9 +18,6 @@ const EmptyCart = () => {
 
 const Product = ({ data, key }) => {
   const dispatch = useDispatch();
-  const ratings = data?.Review.map((item) => item.rating);
-  const averageRating =
-    ratings?.length > 0 ? ratings?.reduce((acc, rating) => acc + rating, 0) / ratings?.length : 0;
 
   const handleRemove = (id) => {
     dispatch(removeProduct(id));

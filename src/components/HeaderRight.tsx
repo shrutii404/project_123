@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, TouchableOpacity, Text, Pressable } from 'react-native';
 import { useModal } from '../context/ModalContext'; // Adjust the path as necessary
 import UserIcon from '../icons/UserIcon';
 import SearchIcon from '../icons/SearchIcon';
-import ShakehandIcon from '../icons/ShakehandIcon';
 import CartIcon from '../icons/CartIcon';
 import FaviroteIcon from '../icons/FaviroteIcon';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -17,7 +16,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const HeaderRight = ({ navigation }) => {
   const { showModal, hideModal } = useModal();
   const { toggleSearchBar } = useSearchBox();
-  const [favirotes, setFavirotes] = useState();
   const cartitems = useSelector((state) => state.cart.items);
   const userDetails = useSelector((state) => state.user.user);
   const dispatch = useDispatch();

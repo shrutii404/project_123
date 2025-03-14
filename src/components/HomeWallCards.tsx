@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, Text, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { placeHolderImage } from '../utils/constants';
 

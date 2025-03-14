@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet } from 'react-native';
 
 const ModalContext = createContext();
 

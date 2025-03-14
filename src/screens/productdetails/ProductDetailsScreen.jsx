@@ -1,18 +1,8 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, ScrollView, Pressable, TouchableOpacity, TextInput } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import ProductImageSlider from '../../components/ProductImageSlider';
-import ProductsCard from '../../components/ProductsCard';
-import HomeFooter from '../../components/HomeFooter';
 import ShimmerEffect from '../../components/ShimmerEffect';
 import axios from 'axios';
 import ReviewsSection from '../../components/ReviewSection';

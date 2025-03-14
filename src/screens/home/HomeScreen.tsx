@@ -1,9 +1,9 @@
-import { ScrollView, Text, View, Image, ActivityIndicator } from 'react-native';
+import React from 'react';
+import { ScrollView, Text, View, Image } from 'react-native';
 import HomeSubsection from '../../components/HomeSubsection';
 import HomeWallCards from '../../components/HomeWallCards';
 import HomeServicesInfo from '../../components/HomeServicesInfo';
 import HomeCarousel from '../../components/HomeCarousel';
-import HomeFooter from '../../components/HomeFooter';
 import { useGetCategoriesQuery, useGetProductVariationsQuery } from '../../store/slices/apiSlice';
 import { useEffect, useState } from 'react';
 import ShimmerEffect from '../../components/ShimmerEffect';

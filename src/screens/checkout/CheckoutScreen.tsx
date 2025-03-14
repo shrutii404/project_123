@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { House } from 'phosphor-react-native';
-import { useSelector } from 'react-redux';
 import apiService from '../../services/apiSevices';
 import OrderSummaryCard from '../../components/OrderSummaryCard';
 import WebView from 'react-native-webview';
@@ -11,7 +10,6 @@ import { useNavigation } from '@react-navigation/native';
 const CheckoutDetailsScreen = () => {
   const navigation = useNavigation();
   const [availability, setAvailability] = useState(3);
-  const userDetails = useSelector((state) => state.user.user);
 
   const [userData, setUserData] = useState(null);
   const [webViewUrl, setWebViewUrl] = useState<string | null>(null);

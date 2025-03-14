@@ -1,8 +1,8 @@
 import { View, Text, Pressable } from 'react-native';
-import React, { useState } from 'react';
+import React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const HomeAccordian = ({ key, question, answer, isOpen, onToggle }) => {
+const HomeAccordian = ({ question, answer, isOpen, onToggle }) => {
   const handleExpand = () => {
     onToggle();
   };

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const HomeFooter = () => {
-  const [links, setLinks] = useState({
+  const [links] = useState({
     category: [
       { text: 'Plywood' },
       { text: 'Laminates' },

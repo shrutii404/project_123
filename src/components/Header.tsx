@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
 import HeaderRight from './HeaderRight';
 import { Image } from 'react-native-svg';

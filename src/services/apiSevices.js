@@ -1,5 +1,4 @@
 import axios from 'axios';
-import store from '../store'; // Adjust this import path to match your project structure
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const baseURL = 'https://ecommercedev-production.up.railway.app/';

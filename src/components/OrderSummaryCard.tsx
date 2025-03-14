@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Linking } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Truck, SpinnerGap } from 'phosphor-react-native';
 import { useSelector } from 'react-redux';
 import apiService from '../services/apiSevices';
-import { WebView } from 'react-native-webview';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const OrderSummaryCard = ({ setWebViewUrl, webViewUrl, availability }) => {
+const OrderSummaryCard = ({ setWebViewUrl, availability }) => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [address, setAddress] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [address] = useState([]);
 
   const userDetails = useSelector((state) => state.user.user);
   const cart = useSelector((state) => state.cart.items);

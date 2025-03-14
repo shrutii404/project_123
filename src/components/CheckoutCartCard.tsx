@@ -1,6 +1,6 @@
 import { XCircle } from 'phosphor-react-native';
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 
 const CheckoutCartCard = ({
   id,

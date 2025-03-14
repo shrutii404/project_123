@@ -1,9 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { View, Text, TouchableOpacity, Alert, Image } from 'react-native';
 import { useSelector } from 'react-redux';
-// Removed all dependencies
 
 const CartPriceCard = () => {
   const navigation = useNavigation();
