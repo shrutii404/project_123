@@ -4,8 +4,6 @@ import React from 'react';
 const ShippingPolicy = () => {
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Shipping Policy</Text>
-
       <Text style={styles.paragraph}>
         Ordering at www.hurlahardware.com is easy and fun. Browse the website to make your purchase.
         You need to provide your contact details and shipping address for hassle-free delivery.

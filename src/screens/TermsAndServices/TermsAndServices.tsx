@@ -6,7 +6,6 @@ const TermsAndServices = () => {
     <ScrollView style={styles.container}>
       {/* Overview Section */}
       <View style={styles.section}>
-        <Text style={styles.header}>Terms of Service</Text>
         <Text style={styles.subHeader}>OVERVIEW</Text>
         <Text style={styles.paragraph}>
           This website is operated by Hurla Paints & Plywood. Throughout the site, the terms “we”,

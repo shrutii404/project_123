@@ -27,12 +27,14 @@ const servicesData: ServiceInfo[] = [
     title: 'Easy-to-Install',
     subtext: 'Louvers with Water Proof & Borer Resistant Properties.',
   },
-  // Add more service items here
 ];
 
 const ServiceItem = ({ item }: { item: ServiceInfo }) => (
   <View className="items-center w-full py-4">
-    <Image source={{ uri: item.imageUri }} className="h-14 w-14 bg-[#F7F7F7]" />
+    <Image
+      source={{ uri: item.imageUri }}
+      className="h-14 w-14 rounded-2xl grid place-content-center"
+    />
     <Text className="text-[#76453b] text-xl font-semibold w-full text-center my-2">
       {item.title}
     </Text>

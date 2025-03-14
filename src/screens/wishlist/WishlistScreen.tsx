@@ -10,7 +10,7 @@ const WishlistScreen = () => {
   const userDetails = useSelector((state) => state.user.user);
   const wishlist = useSelector((state) => state.wishlist.items);
   const dispatch = useDispatch();
-  const { data: products } = useGetProductVariationsQuery();
+  const { data: products } = useGetProductVariationsQuery('');
 
   useEffect(() => {
     if (products && userDetails && userDetails.FavouriteProd) {

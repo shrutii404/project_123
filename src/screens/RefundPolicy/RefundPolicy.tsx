@@ -4,8 +4,6 @@ import React from 'react';
 const RefundPolicy = () => {
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Refund Policy</Text>
-
       <Text style={styles.subHeader}>Return Policy</Text>
       <Text style={styles.paragraph}>
         We have a 30-day return policy, which means you have 30 days after receiving your item to

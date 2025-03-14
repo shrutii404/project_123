@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  ToastAndroid, // Add this import
+  ToastAndroid,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome5';
@@ -20,11 +20,10 @@ import OrderTable from '../../components/OrderTable';
 import { userSlice } from '../../store/slices/userSlice';
 import ShimmerEffect from '../../components/ShimmerEffect';
 
-const ManageProfileScreen = ({ route }) => {
-  const { defaulttab } = route.params;
-  const [tab, setTab] = useState(defaulttab || 1);
-  const [modalVisible, setModalVisible] = useState(false); // Modal for editing name or adding address
-  const [modalType, setModalType] = useState('editName'); // Track modal type
+const ManageProfileScreen = () => {
+  const [tab, setTab] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState('editName');
   const [reviews, setReviews] = useState([]);
   const [address, setAddress] = useState([]);
   const [details, setDetails] = useState({ first: '', last: '' });
@@ -39,41 +38,40 @@ const ManageProfileScreen = ({ route }) => {
     data: products,
     error: productserror,
     isLoading: productLoading,
-  } = useGetProductVariationsQuery();
+  } = useGetProductVariationsQuery('');
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const userDetials = useSelector((state) => state.user.user);
   const handleChangeTab = async (t) => {
     setTab(t);
-    // Show shimmer effect
-    await fetchUserDetails(); // Fetch user details on tab change
+    await fetchUserDetails();
   };
 
   const handleEditName = () => {
-    setModalType('editName'); // Set modal type to edit name
+    setModalType('editName');
     setDetails({
       first: userDetials.name.split(' ')[0],
       last: userDetials.name.split(' ')[1],
     });
-    setModalVisible(true); // Show modal
+    setModalVisible(true);
   };
 
   const handleAddNewAddress = () => {
-    setModalType('addAddress'); // Set modal type to add address
-    setModalVisible(true); // Show modal
+    setModalType('addAddress');
+    setModalVisible(true);
   };
   const handleEditAddress = () => {
     setShipping(address[0]);
-    setModalType('editAddress'); // Set modal type to add address
-    setModalVisible(true); // Show modal
+    setModalType('editAddress');
+    setModalVisible(true);
   };
   const handleDeleteAddress = async (id) => {
     try {
       const response = await apiService.removeAddress(id);
-      ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT); // Show toast for successful deletion
+      ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT);
       await fetchUserDetails();
     } catch (error) {
-      ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.SHORT); // Show toast for error
+      ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.SHORT);
     }
   };
 

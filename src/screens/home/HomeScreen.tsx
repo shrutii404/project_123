@@ -127,7 +127,6 @@ function HomeScreen() {
           </Text>
         </View>
         <HomeCarousel type="review" />
-        <View className="h-0.5 w-full bg-gray-400 mt-5"></View>
         <View className="items-center w-full">
           <Text className="text-black text-3xl font-bold my-10 w-[70%] text-center">
             Frequently Asked Questions

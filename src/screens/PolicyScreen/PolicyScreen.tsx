@@ -4,8 +4,6 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 const PolicyScreen = () => {
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Privacy Policy</Text>
-
       <Text style={styles.paragraph}>
         This Privacy Policy outlines how Hurla Paints and Plywood, hosted on www.hurlahardware.com,
         collects, uses, and discloses personal information about visitors and customers. Please
