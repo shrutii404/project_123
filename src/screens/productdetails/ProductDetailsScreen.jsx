@@ -10,6 +10,7 @@ import SearchBar from '../../components/SearchBar';
 import { useSearchBox } from '../../context/SearchContext';
 import { useDispatch } from 'react-redux';
 import { addProduct } from '../../store/slices/cartSlice';
+import { apiEndpoint } from '../../utils/constants';
 
 const ProductDetailsScreen = ({ route }) => {
   const [quantity, setQuantity] = useState(1);
@@ -34,9 +35,7 @@ const ProductDetailsScreen = ({ route }) => {
   const getProductVariationDetails = async (id) => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `https://ecommercedev-production.up.railway.app/api/product-variations/${id}`
-      );
+      const response = await axios.get(`${apiEndpoint}api/product-variations/${id}`);
       if (response.data) {
         setProductData(response.data);
 

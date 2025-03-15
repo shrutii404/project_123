@@ -1,4 +1,4 @@
-package com.ecommerece
+package com.hurlahardwares
 
 import android.app.Application
 import com.facebook.react.PackageList

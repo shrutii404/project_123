@@ -1,11 +1,12 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiEndpoint } from '../utils/constants';
 
-const baseURL = 'https://ecommercedev-production.up.railway.app/';
+const baseURL = apiEndpoint;
 
 const api = axios.create({
   baseURL,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 10000,
 });
 
 // Request interceptor
