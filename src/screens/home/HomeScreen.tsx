@@ -14,11 +14,15 @@ import { placeHolderImageSquare } from '../../utils/constants';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
 
-function HomeScreen() {
+import { useAppDispatch } from '../../store/store';
+import { apiSlice } from '../../store/slices/apiSlice';
+
+function HomeScreen({ navigation }: { navigation: any }) {
   const { error: apiError, handleError, clearError } = useApiError();
   const [parentdata, setParentdata] = useState([]);
   const [imageData, setImageData] = useState({});
   const { searchVisible } = useSearchBox();
+  const dispatch = useAppDispatch();
 
   const {
     data: categories,
@@ -100,7 +104,13 @@ function HomeScreen() {
           className="bg-blue-500 px-4 py-2 rounded"
           onPress={() => {
             clearError();
-            window.location.reload();
+            // Invalidate cache to force re-fetch
+            dispatch(apiSlice.util.invalidateTags(['User']));
+            // Reset the queries
+            dispatch(apiSlice.util.resetApiState());
+            // Re-fetch the data
+            dispatch(apiSlice.endpoints.getCategories.initiate(''));
+            dispatch(apiSlice.endpoints.getProductVariations.initiate(''));
           }}
         >
           <Text className="text-white">Try Again</Text>
