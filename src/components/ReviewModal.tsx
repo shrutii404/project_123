@@ -2,54 +2,60 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Assuming you are using FontAwesome for stars and close button
+import ApiService from '../services/apiService';
+import { getErrorMessage } from '../core/error-handling/errorMessages'; 
 
-const ReviewModal = ({ isModalVisible, onCloseModal, productId }) => {
-  const [rating, setRating] = useState(0); // Initial rating
-  const [comment, setComment] = useState(''); // Initial comment
+interface ReviewModalProps {
+  isModalVisible: boolean;
+  onCloseModal: () => void;
+  productId: string;
+}
 
-  const handleStarPress = (star) => {
+const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal, productId }) => {
+  const [rating, setRating] = useState<number>(0); // Initial rating
+  const [comment, setComment] = useState<string>(''); // Initial comment
+  const [loading, setLoading] = useState<boolean>(false); // Add a loading state
+
+  const handleStarPress = (star: number) => {
     setRating(star);
   };
 
   const handleSubmitReview = async () => {
-    const userDetailsString = await AsyncStorage.getItem('userDetails');
-
-    // Parse the retrieved string to an object
-    const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
-
-    // Check if token exists (indicating user is logged in)
-    if (!userDetails && !userDetails.token) {
-      Alert.alert('Login Required', 'You need to log in to write a review.', [{ text: 'OK' }]);
+    if (!comment.trim()) {
+      Alert.alert('Error', 'Please write a comment.');
+      return;
     }
-    console.log('@@@@', userDetails);
 
-    const payload = {
-      id: new Date().toISOString(),
-      rating,
-      comment,
-      userId: userDetails.id,
-      VariationId: productId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    if (rating === 0) {
+      Alert.alert('Error', 'Please select a rating.');
+      return;
+    }
 
+    setLoading(true);
     try {
-      const response = await fetch(`https://www.hurlahardware.com/product/${productId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const userDetailsString = await AsyncStorage.getItem('userDetails');
+      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
 
-      if (response.ok) {
-        console.log('Review submitted successfully!');
-        onCloseModal(); // Close modal on successful submission
-      } else {
-        console.error('Error submitting review:', response.statusText);
+      if (!userDetails || !userDetails.token) {
+        Alert.alert('Login Required', 'You need to log in to write a review.', [{ text: 'OK' }]);
+        return;
       }
-    } catch (error) {
-      console.error('Error submitting review:', error);
+
+      const payload = {
+        productId,
+        rating,
+        comment,
+      };
+
+      await ApiService.createReview(payload);
+      Alert.alert('Success', 'Review submitted successfully!');
+      onCloseModal();
+    } catch (err) {
+      console.error('Review submission error:', err);
+      const errorMessage = getErrorMessage(err);
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,8 +102,8 @@ const ReviewModal = ({ isModalVisible, onCloseModal, productId }) => {
           />
 
           {/* Submit Review Button */}
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmitReview}>
-            <Text style={styles.submitText}>Submit Review</Text>
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmitReview} disabled={loading}>
+            <Text style={styles.submitText}>{loading ? 'Submitting...' : 'Submit Review'}</Text>
           </TouchableOpacity>
         </View>
       </View>

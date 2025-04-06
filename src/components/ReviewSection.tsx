@@ -1,45 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity} from 'react-native';
 import ReviewItem from './ReviewItem'; // Import the new ReviewItem component
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import ReviewModal from './ReviewModal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 
 const ReviewsSection = ({ data, avgRating, allData }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation();
+  const user = useSelector((state: RootState) => state.user.user);
 
-  console.log('@@@@@@@@@@', allData);
 
   const handleOpenModal = () => {
     setIsModalVisible(true);
   };
 
-  const checkUserLogin = async () => {
-    try {
-      // Retrieve user details from AsyncStorage
-      const userDetailsString = await AsyncStorage.getItem('userDetails');
-
-      // Parse the retrieved string to an object
-      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
-
-      // Check if token exists (indicating user is logged in)
-      if (userDetails && userDetails.token) {
-        // Open modal if logged in
-        handleOpenModal();
-      } else {
-        // Show an alert to prompt the user to log in
-        navigation.navigate('Login');
-        // Alert.alert(
-        //   'Login Required',
-        //   'You need to log in to write a review.',
-        //   [{ text: 'OK' }],
-        // );
-      }
-    } catch (error) {
-      console.error('Error checking user login:', error);
-      Alert.alert('Error', 'An error occurred while checking login status.');
+  const checkUserLogin = () => {
+    if (user) {
+      handleOpenModal();
+    } else {
+      navigation.navigate('Login');
     }
   };
 

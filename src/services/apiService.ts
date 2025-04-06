@@ -158,6 +158,19 @@ class ApiService {
   getOrders(userId: string): Promise<AxiosResponse> {
     return this.api.get(`/api/orderView/${userId}`);
   }
+
+  // Review endpoints
+  getReviews(productId: string): Promise<AxiosResponse> {
+    return this.api.get(`/api/reviews/${productId}`);
+  }
+
+  createReview(data: {
+    productId: string;
+    rating: number;
+    comment: string;
+  }): Promise<AxiosResponse> {
+    return this.api.post('/api/reviews', data);
+  }
 }
 
 export default ApiService.getInstance();
