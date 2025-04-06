@@ -7,138 +7,270 @@ import {
   TouchableOpacity,
   Modal,
   ToastAndroid,
+  Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useDispatch, useSelector } from 'react-redux';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntIcons from 'react-native-vector-icons/AntDesign';
-import { useGetProductVariationsQuery } from '../../store/slices/apiSlice';
-import apiService from '../../services/apiSevices';
+import { useGetProductVariationsQuery, useUpdateUserDetailsMutation } from '../../store/slices/apiSlice';
+import apiService from '../../services/apiService';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import OrderTable from '../../components/OrderTable';
 import { userSlice } from '../../store/slices/userSlice';
 import ShimmerEffect from '../../components/ShimmerEffect';
+import type { RootState } from '../../store/store';
+
+interface UserAddress {
+  id?: string;
+  addressId?: string;
+  street: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  city: string;
+}
+
+interface Review {
+  id: string;
+  productId: string;
+  productName?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  date?: string;
+}
+
+interface UserFormDetails {
+  first: string;
+  last: string;
+  email: string;
+}
 
 const ManageProfileScreen = () => {
   const [tab, setTab] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState('editName');
-  const [reviews, setReviews] = useState([]);
-  const [address, setAddress] = useState([]);
-  const [details, setDetails] = useState({ first: '', last: '' });
-  const [shipping, setShipping] = useState({
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [address, setAddress] = useState<UserAddress[]>([]);
+  const [details, setDetails] = useState<UserFormDetails>({ 
+    first: '', 
+    last: '',
+    email: '' 
+  });
+  const [shipping, setShipping] = useState<UserAddress>({
     street: '',
     state: '',
     country: '',
     postalCode: '',
     city: '',
   });
+
   const {
     data: products,
-    error: productserror,
+    error: productsError,
     isLoading: productLoading,
   } = useGetProductVariationsQuery('');
+  
+  const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserDetailsMutation();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-  const userDetials = useSelector((state) => state.user.user);
-  const handleChangeTab = async (t) => {
+  const userDetails = useSelector((state: RootState) => state.user.user) as any;
+  const handleChangeTab = (t: number) => {
     setTab(t);
-    await fetchUserDetails();
+    fetchUserDetails();
   };
 
   const handleEditName = () => {
     setModalType('editName');
-    setDetails({
-      first: userDetials.name.split(' ')[0],
-      last: userDetials.name.split(' ')[1],
-    });
+    if (userDetails?.name) {
+      const nameParts = userDetails.name.split(' ');
+      setDetails({
+        first: nameParts[0] || '',
+        last: nameParts[1] || '',
+        email: userDetails.email || ''
+      });
+    }
     setModalVisible(true);
   };
 
   const handleAddNewAddress = () => {
     setModalType('addAddress');
+    setShipping({
+      street: '',
+      state: '',
+      country: '',
+      postalCode: '',
+      city: '',
+    });
     setModalVisible(true);
   };
-  const handleEditAddress = () => {
-    setShipping(address[0]);
+
+  const handleEditAddress = (addr: UserAddress) => {
     setModalType('editAddress');
+    setShipping({
+      street: addr.street || '',
+      state: addr.state || '',
+      country: addr.country || '',
+      postalCode: addr.postalCode || '',
+      city: addr.city || '',
+      id: addr.id,
+      addressId: addr.addressId
+    });
     setModalVisible(true);
   };
-  const handleDeleteAddress = async (id) => {
+
+  const handleDeleteAddress = async (id: string) => {
     try {
-      const response = await apiService.removeAddress(id);
-      ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT);
-      await fetchUserDetails();
+      setLoading(true);
+      const result = await updateUser({
+        deleteAddressId: id
+      }).unwrap();
+      
+      if (result) {
+        const updatedAddresses = address.filter((addr) => (addr.id || addr.addressId) !== id);
+        setAddress(updatedAddresses);
+        dispatch(userSlice.actions.updateUserDetails({ address: updatedAddresses }));
+        ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT);
+      }
     } catch (error) {
-      ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.SHORT);
+      Alert.alert('Error', 'Failed to delete address');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAddressChange = (key, value) => {
+  const handleAddressChange = (key: keyof UserAddress, value: string) => {
     setShipping((prev) => ({ ...prev, [key]: value }));
   };
-  const handleNameChange = (key, value) => {
+
+  const handleNameChange = (key: keyof UserFormDetails, value: string) => {
     setDetails((prev) => ({ ...prev, [key]: value }));
   };
 
   const fetchUserDetails = async () => {
-    setLoading(true);
-    if (products) {
-      const response = await apiService.getUserDetails(userDetials.id);
-      const details = response.data;
+    try {
+      setLoading(true);
+      if (!userDetails || !userDetails.id) {
+        setLoading(false);
+        return;
+      }
+      
+      const response = await apiService.getUserDetails(userDetails.id);
+      const userData = response.data;
 
-      dispatch(userSlice.actions.userLogin(details));
-
-      setAddress(details.addresses);
-      const updatedReviews = details.reviews.map((review) => {
-        const product = products.find((product) => product.id === review.id);
-        return {
-          ...review,
-          productName: product ? product.name : 'Unknown Product', // Add product name to review
-        };
-      });
-
-      setReviews(updatedReviews);
+      if (userData) {
+        // Update Redux store with latest user data
+        dispatch(userSlice.actions.updateUserDetails(userData));
+        
+        // Update local state
+        if (userData.name) {
+          const nameParts = userData.name.split(' ');
+          setDetails({
+            first: nameParts[0] || '',
+            last: nameParts[1] || '',
+            email: userData.email || ''
+          });
+        }
+        
+        // Handle address data
+        if (userData.address) {
+          setAddress(Array.isArray(userData.address) ? userData.address : [userData.address]);
+        }
+        
+        // Process reviews data with product information
+        if (userData.reviews && products) {
+          const updatedReviews = userData.reviews.map((review: Review) => {
+            const product = products.find((p: any) => p.id === review.productId);
+            return {
+              ...review,
+              productName: product?.name || 'Unknown Product'
+            };
+          });
+          setReviews(updatedReviews);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      Alert.alert('Error', 'Failed to load user profile data');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
-    fetchUserDetails(); // Call the async function
-  }, [products, tab]);
+    if (userDetails && products) {
+      fetchUserDetails();
+    }
+  }, [userDetails?.id, products, tab]);
 
-  const handleUpdate = async () => {
-    setModalVisible(false);
+  const handleSaveDetails = async () => {
     try {
-      if (modalType === 'editName') {
-        await apiService.updateUserDetails(userDetials.id, {
-          name: `${details.first} ${details.last}`,
-        });
-        ToastAndroid.show('Name updated successfully!', ToastAndroid.SHORT); // Show toast for name update
-        setDetails({ first: '', last: '' });
-      } else if (modalType === 'addAddress') {
-        await apiService.addAddress({
-          ...shipping,
-          userId: userDetials.id,
-          country: 'India',
-          selected: true,
-        });
-        ToastAndroid.show('Address added successfully!', ToastAndroid.SHORT); // Show toast for address addition
+      setLoading(true);
+      if (!details.first.trim() || !details.last.trim()) {
+        Alert.alert('Error', 'Please enter both first and last name.');
+        return;
+      }
+      
+      const result = await updateUser({
+        name: `${details.first} ${details.last}`.trim(),
+      }).unwrap();
+      
+      if (result) {
+        dispatch(userSlice.actions.updateUserDetails({ 
+          name: `${details.first} ${details.last}`.trim() 
+        }));
+        ToastAndroid.show('Name updated successfully!', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update name');
+    } finally {
+      setLoading(false);
+      setModalVisible(false);
+    }
+  };
 
-        setShipping({
-          street: '',
-          state: '',
-          country: '',
-          postalCode: '',
-          city: '',
-        });
-      } else if (modalType === 'editAddress') {
-        await apiService.updateAddress(address[0].id, {
+  const handleSaveEmail = async () => {
+    try {
+      setLoading(true);
+      if (!details.email.trim()) {
+        Alert.alert('Error', 'Please enter an email address');
+        return;
+      }
+      
+      const result = await updateUser({
+        email: details.email.trim(),
+      }).unwrap();
+      
+      if (result) {
+        dispatch(userSlice.actions.updateUserDetails({ email: result.email }));
+        ToastAndroid.show('Email updated successfully!', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update email');
+    } finally {
+      setLoading(false);
+      setModalVisible(false);
+    }
+  };
+
+  const handleSaveAddress = async () => {
+    try {
+      setLoading(true);
+      const result = await updateUser({
+        address: {
           ...shipping,
-          userId: userDetials.id,
-        });
-        ToastAndroid.show('Address updated successfully!', ToastAndroid.SHORT); // Show toast for address update
+          country: shipping.country || 'India',
+        }
+      }).unwrap();
+      
+      if (result) {
+        dispatch(userSlice.actions.updateUserDetails({ address: result.address }));
+        ToastAndroid.show(
+          `Address ${modalType === 'addAddress' ? 'added' : 'updated'} successfully!`, 
+          ToastAndroid.SHORT
+        );
         setShipping({
           street: '',
           state: '',
@@ -148,10 +280,29 @@ const ManageProfileScreen = () => {
         });
       }
     } catch (error) {
-      console.log(error);
-      ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.SHORT); // Show toast for error
+      Alert.alert('Error', 'Failed to save address');
+    } finally {
+      setLoading(false);
+      setModalVisible(false);
     }
-    await fetchUserDetails();
+  };
+
+  const handleUpdate = async () => {
+    try {
+      setLoading(true);
+      if (modalType === 'editName') {
+        await handleSaveDetails();
+      } else if (modalType === 'editEmail') {
+        await handleSaveEmail();
+      } else if (modalType === 'editAddress' || modalType === 'addAddress') {
+        await handleSaveAddress();
+      }
+    } catch (error) {
+      console.error(error);
+      ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.SHORT);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -202,39 +353,39 @@ const ManageProfileScreen = () => {
           <View className="w-[95%]">
             <Text className="text-black font-bold mb-2">First Name</Text>
             <TextInput
-              className={`border text-gray-300 border-gray-300 border-1 rounded h-10 w-[90%] font-medium `}
-              value={userDetials ? userDetials.name.split(' ')[0] : ''}
-              placeholder="Phone Number"
+              className={`text-gray-300 border border-gray-300 rounded-xl p-2 font-medium`}
+              value={userDetails ? userDetails.name?.split(' ')[0] || '' : ''}
+              placeholder="First Name"
               placeholderTextColor="#6b7280"
               readOnly
             />
             <Text className="text-black font-bold my-2">Last Name</Text>
             <TextInput
-              className={`border text-gray-300 border-gray-300 border-1 rounded h-10 w-[90%] font-medium `}
-              value={userDetials ? userDetials.name.split(' ')[1] : ''}
-              placeholder="Phone Number"
+              className={`text-gray-300 border border-gray-300 rounded-xl p-2 font-medium`}
+              value={userDetails ? userDetails.name?.split(' ')[1] || '' : ''}
+              placeholder="Last Name"
               placeholderTextColor="#6b7280"
               readOnly
             />
             <Text className="text-black font-bold my-2">Phone Number</Text>
-            <View className="rounded border border-2 h-10 border-gray-500 flex-row w-[90%] ">
+            <View className="rounded border-2 h-10 border-gray-500 flex-row w-[90%]">
               <View className="w-[12%] justify-center  border-gray-500 border-r-2 bg-gray-200">
                 <Text className="text-gray-500 text-right pr-2">+91</Text>
               </View>
               <View className="w-[88%] justify-center">
                 <Text className="text-gray-400 text-left pl-2">
-                  {userDetials ? userDetials.phoneNo : ''}
+                  {userDetails ? userDetails.phoneNo : ''}
                 </Text>
               </View>
             </View>
             <Text className="text-black font-bold my-2">WhatsApp Number</Text>
-            <View className="rounded border border-2 h-10 border-gray-500 flex-row w-[90%] ">
+            <View className="rounded border-2 h-10 border-gray-500 flex-row w-[90%]">
               <View className="w-[12%] justify-center  border-gray-500 border-r-2 bg-gray-200">
                 <Text className="text-gray-500 text-right pr-2">+91</Text>
               </View>
               <View className="w-[88%] justify-center">
                 <Text className="text-gray-400 text-left pl-2">
-                  {userDetials ? userDetials.phoneNo : ''}
+                  {userDetails ? userDetails.phoneNo : ''}
                 </Text>
               </View>
             </View>
@@ -285,17 +436,17 @@ const ManageProfileScreen = () => {
           !loading &&
           (address && address.length > 0 ? (
             address.map((a) => (
-              <View className="border  border-2 border-[#6e6df9]  w-[95%] mt-3 rounded-lg p-2 pb-4">
+              <View className="border-2 border-[#6e6df9] w-[95%] mt-3 rounded-lg p-2 pb-4">
                 <View className="flex-row justify-between items-center ">
                   <View className="flex-row items-center">
                     <MaterialIcons name="house" color="#6e6df9" size={30} />
                     <Text className="text-[#6e6df9] font-semibold text-lg ml-1">Home</Text>
                   </View>
                   <View className="flex-row">
-                    <TouchableOpacity onPress={() => handleEditAddress()}>
+                    <TouchableOpacity onPress={() => handleEditAddress(a)}>
                       <Icon name="edit" color="#000" size={20} />
                     </TouchableOpacity>
-                    <TouchableOpacity className="ml-3" onPress={() => handleDeleteAddress(a.id)}>
+                    <TouchableOpacity className="ml-3" onPress={() => handleDeleteAddress(a.id || a.addressId || '')}>
                       <AntIcons name="delete" size={20} color="red" />
                     </TouchableOpacity>
                   </View>

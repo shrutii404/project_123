@@ -30,7 +30,8 @@ import AboutScreen from './src/screens/AboutScreen/AboutScreen';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getUser } from './src/utils/user';
-import { userSlice } from './src/store/slices/userSlice.js';
+import { userSlice } from './src/store/slices/userSlice';
+import { AuthProvider } from './src/context/AuthContext';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -40,9 +41,26 @@ function HomeStack() {
   const dispatch = useDispatch();
 
   const setAuth = useCallback(async () => {
-    const user = await getUser();
-    dispatch(userSlice.actions.userLogin(user));
-  }, []);
+    try {
+      const userData = await getUser();
+      if (userData?.token && userData?.user) {
+        // Map the user data from storage to match the expected format in the store
+        const userId = userData.user._id || userData.user.id;
+        dispatch(userSlice.actions.userLogin({
+          id: userId, // Primary ID field
+          _id: userId, // Support MongoDB style ID
+          phoneNo: userData.user.phoneNo,
+          name: userData.user.name || 'User',
+          email: userData.user.email,
+          address: userData.user.address,
+          FavouriteProd: userData.user.FavouriteProd || [],
+          isAdmin: userData.user.isAdmin || false
+        }));
+      }
+    } catch (error) {
+      console.error('Error restoring auth state:', error);
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     const prepare = async () => {
@@ -239,6 +257,7 @@ function App(): React.JSX.Element {
     <Provider store={store}>
       <ModalProvider>
         <SearchProvider>
+          <AuthProvider>
           <NavigationContainer>
             <Drawer.Navigator
               initialRouteName="HomeStack"
@@ -322,6 +341,7 @@ function App(): React.JSX.Element {
               />
             </Drawer.Navigator>
           </NavigationContainer>
+          </AuthProvider>
         </SearchProvider>
       </ModalProvider>
     </Provider>

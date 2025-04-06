@@ -4,102 +4,209 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
+  StyleSheet,
   Alert,
-  ToastAndroid,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useLoginUserMutation, useVerifyUserMutation } from '../../store/slices/apiSlice';
+import {
+  useLoginUserMutation,
+  useVerifyUserMutation,
+  useResendOTPMutation,
+} from '../../store/slices/apiSlice';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { SerializedError } from '@reduxjs/toolkit';
+import { LoginResponse } from '../../types/auth';
 import { useDispatch } from 'react-redux';
-import { userSlice } from '../../store/slices/userSlice';
+import { userLogin } from '../../store/slices/userSlice';
 import { setUser } from '../../utils/user';
+import { LoginScreenProps } from '../../types/auth';
 
-const LoginScreen: React.FC = ({ navigation }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [phonenumber, setPhonenumber] = useState<string>('');
   const [verify, setVerify] = useState<boolean>(false);
   const [resend, setResend] = useState<boolean>(false);
-  const [otp, setOtp] = useState(new Array(6).fill(''));
-  const [loading, setLoading] = useState(false);
-  const inputRefs = useRef([]);
-  const [timer, setTimer] = useState(180); // 180 seconds = 3 minutes
+  const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
+  const [loading, setLoading] = useState<boolean>(false);
+  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const [timer, setTimer] = useState<number>(180); // 180 seconds = 3 minutes
 
-  const handleOtpChange = (text, index) => {
-    const newOtp = [...otp];
-    newOtp[index] = text;
-    setOtp(newOtp);
-
-    // Move focus to the next input box if text is entered
-    if (text.length === 1 && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
-
-    // Move focus to the previous input box if text is deleted
-    if (text.length === 0 && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
   const [loginUser] = useLoginUserMutation();
   const [verifyUser] = useVerifyUserMutation();
   const dispatch = useDispatch();
 
-  // Countdown Timer
-  useEffect(() => {
-    if (timer > 0) {
-      const interval = setInterval(() => {
-        if (timer == 1) {
-          setResend(true);
-        }
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
+  const validatePhoneNumber = (phone: string): boolean => {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
 
-      return () => clearInterval(interval);
+  const handleOtpChange = (text: string, index: number): void => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    if (text.length === 1 && index < 5 && inputRefs.current[index + 1]) {
+      inputRefs.current[index + 1]?.focus();
     }
-  }, [timer]);
 
-  const formatTime = (time) => {
+    if (text.length === 0 && index > 0 && inputRefs.current[index - 1]) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (verify && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => {
+          if (prevTimer === 1) {
+            setResend(true);
+          }
+          return prevTimer - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [verify, timer]);
+
+  const formatTime = (time: number): string => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const handlePhonenumberChange = (inputText: string) => {
-    setPhonenumber(inputText);
+  const handlePhonenumberChange = (inputText: string): void => {
+    // Only allow numbers
+    const numbersOnly = inputText.replace(/[^0-9]/g, '');
+    setPhonenumber(numbersOnly);
   };
 
-  const handleNavigateBack = () => {
-    navigation.navigate('Home');
-  };
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    if (!verify) {
-      const response = await loginUser({ phoneNo: phonenumber });
-      if (response.error) {
-        Alert.alert('Error', response.error.data.message);
-      } else {
-        ToastAndroid.show('OTP Sent Successfully', ToastAndroid.SHORT);
-      }
-      setVerify(true);
-    } else {
-      const response = await verifyUser({
-        phoneNo: phonenumber,
-        otp: otp.join(''),
-      });
-      if (response.error) {
-        Alert.alert('Error', response.error.data.message);
-      } else {
-        ToastAndroid.show('Login Successfully', ToastAndroid.SHORT);
-        const userDetails = response.data;
-        await setUser(userDetails);
-        dispatch(userSlice.actions.userLogin(userDetails.user));
-      }
-
-      navigation.navigate('Home');
-
+  const handleNavigateBack = (): void => {
+    if (verify) {
       setVerify(false);
+      setOtp(new Array(6).fill(''));
+      setTimer(180);
+      setResend(false);
+    } else {
+      navigation.navigate('Home');
     }
-    setLoading(false);
+  };
+
+  // Helper function to extract error message from API error
+  const getErrorMessage = (error: FetchBaseQueryError | SerializedError | undefined): string => {
+    if (!error) return 'Unknown error occurred';
+    
+    if ('status' in error) {
+      // It's a FetchBaseQueryError
+      const fetchError = error as FetchBaseQueryError;
+      return (fetchError.data as any)?.message || 'An error occurred with the request';
+    }
+    
+    // It's a SerializedError
+    return error.message || 'An unexpected error occurred';
+  };
+
+  const handleResendOTP = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const response = await loginUser({ phoneNo: phonenumber });
+      
+      if ('error' in response) {
+        Alert.alert('Error', getErrorMessage(response.error));
+      } else {
+        setTimer(180);
+        setResend(false);
+        ToastAndroid.show('OTP Resent Successfully', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to resend OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      
+      if (!verify) {
+        if (!validatePhoneNumber(phonenumber)) {
+          Alert.alert('Error', 'Please enter a valid 10-digit phone number');
+          return;
+        }
+
+        const response = await loginUser({ phoneNo: phonenumber });
+        if ('error' in response) {
+          Alert.alert('Error', getErrorMessage(response.error));
+          return;
+        }
+        
+        setVerify(true);
+        setTimer(180);
+        ToastAndroid.show('OTP Sent Successfully', ToastAndroid.SHORT);
+      } else {
+        const otpValue = otp.join('');
+        if (otpValue.length !== 6) {
+          Alert.alert('Error', 'Please enter a valid 6-digit OTP');
+          return;
+        }
+
+        const response = await verifyUser({
+          phoneNo: phonenumber,
+          otp: otpValue,
+        });
+
+        if ('error' in response) {
+          Alert.alert('Error', getErrorMessage(response.error));
+          return;
+        }
+
+        // Type assertion to access the data safely
+        const responseData = response.data as LoginResponse;
+        
+        if (!responseData?.token || !responseData?.user) {
+          Alert.alert('Error', 'Invalid response from server');
+          return;
+        }
+
+        // Extract user details from response
+        const userData = {
+          token: responseData.token,
+          user: {
+            id: responseData.user._id,
+            _id: responseData.user._id,
+            phoneNo: responseData.user.phoneNo || phonenumber,
+            name: responseData.user.name || '',
+            isAdmin: responseData.user.isAdmin || false,
+            email: responseData.user.email,
+            address: responseData.user.address,
+            FavouriteProd: responseData.user.FavouriteProd || []
+          }
+        };
+
+        // First update Redux state
+        dispatch(userLogin({
+          id: response.data.user.id,
+          phoneNo: response.data.user.phoneNo || phonenumber,
+          name: response.data.user.name || 'User',
+          email: response.data.user.email,
+          address: response.data.user.address,
+          FavouriteProd: response.data.user.FavouriteProd || []
+        }));
+        
+        // Then persist to storage
+        await setUser(userData);
+        
+        ToastAndroid.show('Login Successful', ToastAndroid.SHORT);
+        navigation.navigate('Home');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <View className=" flex-1 justify-center items-center w-full">

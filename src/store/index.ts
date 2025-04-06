@@ -4,6 +4,8 @@ import { apiSlice } from './slices/apiSlice';
 import { cartSlice } from './slices/cartSlice';
 import { wishlistSlice } from './slices/wishlistSlice';
 
+export type RootState = ReturnType<typeof store.getState>;
+
 const store = configureStore({
   reducer: {
     api: apiSlice.reducer,

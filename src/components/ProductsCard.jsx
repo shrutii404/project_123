@@ -17,8 +17,7 @@ import {
   useGetUserDetailsQuery,
   useRemoveWishlistMutation,
 } from '../store/slices/apiSlice';
-import axios from 'axios';
-import apiService from '../services/apiSevices';
+import apiService from '../services/apiService';
 import { userSlice } from '../store/slices/userSlice';
 import { calculateActualPriceBasedOnDiscount } from '../utils/calculateDiscount';
 import AsyncStorage from '@react-native-async-storage/async-storage';

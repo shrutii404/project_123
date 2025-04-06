@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
-import apiService from '../services/apiSevices';
+import apiService from '../services/apiService';
 import { Eye } from 'phosphor-react-native';
 import ShimmerEffect from './ShimmerEffect';
 

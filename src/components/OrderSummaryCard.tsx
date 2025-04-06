@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Truck, SpinnerGap } from 'phosphor-react-native';
 import { useSelector } from 'react-redux';
-import apiService from '../services/apiSevices';
+import apiService from '../services/apiService';
 
 const OrderSummaryCard = ({ setWebViewUrl, availability }) => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);

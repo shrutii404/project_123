@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { House } from 'phosphor-react-native';
-import apiService from '../../services/apiSevices';
+import apiService from '../../services/apiService';
 import OrderSummaryCard from '../../components/OrderSummaryCard';
 import WebView from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
