@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, Text, View, Image } from 'react-native';
+import { ScrollView, Text, View, Image, TouchableOpacity } from 'react-native';
 import HomeSubsection from '../../components/HomeSubsection';
 import HomeWallCards from '../../components/HomeWallCards';
 import HomeServicesInfo from '../../components/HomeServicesInfo';
@@ -11,8 +11,11 @@ import HomeFAQQuestions from '../../components/HomeFAQQuestions';
 import SearchBar from '../../components/SearchBar';
 import { useSearchBox } from '../../context/SearchContext';
 import { placeHolderImageSquare } from '../../utils/constants';
+import { useApiError } from '../../core/hooks/useApiError';
+import { getErrorMessage } from '../../core/error-handling/errorMessages';
 
 function HomeScreen() {
+  const { error: apiError, handleError, clearError } = useApiError();
   const [parentdata, setParentdata] = useState([]);
   const [imageData, setImageData] = useState({});
   const { searchVisible } = useSearchBox();
@@ -27,6 +30,12 @@ function HomeScreen() {
     error: productserror,
     isLoading: productLoading,
   } = useGetProductVariationsQuery('');
+
+  useEffect(() => {
+    if (categorieserror || productserror) {
+      handleError('NETWORK_ERROR');
+    }
+  }, [categorieserror, productserror, handleError]);
 
   useEffect(() => {
     if (categories && products) {
@@ -81,19 +90,30 @@ function HomeScreen() {
     }
   }, [categories, products, categoryLoading, productLoading]);
 
+  if (apiError) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-red-500 text-center mb-2">
+          {getErrorMessage(apiError)}
+        </Text>
+        <TouchableOpacity
+          className="bg-blue-500 px-4 py-2 rounded"
+          onPress={() => {
+            clearError();
+            window.location.reload();
+          }}
+        >
+          <Text className="text-white">Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   if (categoryLoading || productLoading) {
     return (
       <View className="flex-1 bg-white">
         <ShimmerEffect />
       </View>
-    );
-  }
-
-  if (categorieserror || productserror) {
-    return (
-      <Text className="text-black">
-        Error: {categorieserror?.message || productserror?.message}
-      </Text>
     );
   }
 

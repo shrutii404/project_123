@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect } from 'react';
+import { ErrorBoundary } from './src/core/error-handling/ErrorBoundary';
 import { Image, TouchableOpacity, View } from 'react-native';
 import HomeScreen from './src/screens/Home/HomeScreen';
 import LoginScreen from './src/screens/Auth/LoginScreen';
@@ -253,99 +254,101 @@ function HomeStack() {
 }
 
 function App(): React.JSX.Element {
-  return (
-    <Provider store={store}>
-      <ModalProvider>
-        <SearchProvider>
-          <AuthProvider>
-          <NavigationContainer>
-            <Drawer.Navigator
-              initialRouteName="HomeStack"
-              screenOptions={{
-                drawerStyle: {
-                  backgroundColor: '#f4f4f4', // Light background
-                  width: 240, // Drawer width
-                },
-                drawerActiveTintColor: '#6200EE', // Active item color
-                drawerInactiveTintColor: '#555', // Inactive item color
-                drawerLabelStyle: {
-                  fontSize: 16, // Label font size
-                },
-              }}
-            >
-              {/* Home Screen */}
-              <Drawer.Screen
-                name="Home"
-                component={HomeStack}
-                options={{
-                  drawerLabel: 'Home',
-                  headerShown: false,
-                  drawerIcon: ({ color, size }) => <Icon name="home" color={color} size={size} />,
-                }}
-              />
+return (
+<ErrorBoundary>
+<Provider store={store}>
+<AuthProvider>
+<ModalProvider>
+<SearchProvider>
+<NavigationContainer>
+<Drawer.Navigator
+initialRouteName="HomeStack"
+screenOptions={{
+drawerStyle: {
+backgroundColor: '#f4f4f4', // Light background
+width: 240, // Drawer width
+},
+drawerActiveTintColor: '#6200EE', // Active item color
+drawerInactiveTintColor: '#555', // Inactive item color
+drawerLabelStyle: {
+fontSize: 16, // Label font size
+},
+}}
+>
+{/* Home Screen */}
+<Drawer.Screen
+name="Home"
+component={HomeStack}
+options={{
+drawerLabel: 'Home',
+headerShown: false,
+drawerIcon: ({ color, size }) => <Icon name="home" color={color} size={size} />,
+}}
+/>
 
-              {/* About Screen */}
-              <Drawer.Screen
-                name="About"
-                component={AboutScreen}
-                options={{
-                  drawerLabel: 'About Us',
-                  drawerIcon: ({ color, size }) => <Icon name="info" color={color} size={size} />,
-                }}
-              />
+{/* About Screen */}
+<Drawer.Screen
+name="About"
+component={AboutScreen}
+options={{
+drawerLabel: 'About Us',
+drawerIcon: ({ color, size }) => <Icon name="info" color={color} size={size} />,
+}}
+/>
 
-              {/* Policy Screen */}
-              <Drawer.Screen
-                name="Policy"
-                component={PolicyScreen}
-                options={{
-                  drawerLabel: 'Privacy Policy',
-                  drawerIcon: ({ color, size }) => <Icon name="lock" color={color} size={size} />,
-                }}
-              />
+{/* Policy Screen */}
+<Drawer.Screen
+name="Policy"
+component={PolicyScreen}
+options={{
+drawerLabel: 'Privacy Policy',
+drawerIcon: ({ color, size }) => <Icon name="lock" color={color} size={size} />,
+}}
+/>
 
-              {/* Terms & Services */}
-              <Drawer.Screen
-                name="Terms & Services"
-                component={TermsAndServices}
-                options={{
-                  drawerLabel: 'Terms & Services',
-                  drawerIcon: ({ color, size }) => (
-                    <Icon name="description" color={color} size={size} />
-                  ),
-                }}
-              />
+{/* Terms & Services */}
+<Drawer.Screen
+name="Terms & Services"
+component={TermsAndServices}
+options={{
+drawerLabel: 'Terms & Services',
+drawerIcon: ({ color, size }) => (
+<Icon name="description" color={color} size={size} />
+),
+}}
+/>
 
-              {/* Shipping Policy */}
-              <Drawer.Screen
-                name="Shipping Policy"
-                component={ShippingPolicy}
-                options={{
-                  drawerLabel: 'Shipping Policy',
-                  drawerIcon: ({ color, size }) => (
-                    <Icon name="local-shipping" color={color} size={size} />
-                  ),
-                }}
-              />
+{/* Shipping Policy */}
+<Drawer.Screen
+name="Shipping Policy"
+component={ShippingPolicy}
+options={{
+drawerLabel: 'Shipping Policy',
+drawerIcon: ({ color, size }) => (
+<Icon name="local-shipping" color={color} size={size} />
+),
+}}
+/>
 
-              {/* Refund Policy */}
-              <Drawer.Screen
-                name="Refund Policy"
-                component={RefundPolicy}
-                options={{
-                  drawerLabel: 'Refund Policy',
-                  drawerIcon: ({ color, size }) => (
-                    <Icon name="attach-money" color={color} size={size} />
-                  ),
-                }}
-              />
-            </Drawer.Navigator>
-          </NavigationContainer>
-          </AuthProvider>
-        </SearchProvider>
-      </ModalProvider>
-    </Provider>
-  );
+{/* Refund Policy */}
+<Drawer.Screen
+name="Refund Policy"
+component={RefundPolicy}
+options={{
+drawerLabel: 'Refund Policy',
+drawerIcon: ({ color, size }) => (
+<Icon name="attach-money" color={color} size={size} />
+),
+}}
+/>
+</Drawer.Navigator>
+</NavigationContainer>
+</SearchProvider>
+</ModalProvider>
+</AuthProvider>
+</Provider>
+</ErrorBoundary>
+);
 }
 
 export default App;

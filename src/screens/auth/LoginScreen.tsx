@@ -23,8 +23,11 @@ import { useDispatch } from 'react-redux';
 import { userLogin } from '../../store/slices/userSlice';
 import { setUser } from '../../utils/user';
 import { LoginScreenProps } from '../../types/auth';
+import { useApiError } from '../../core/hooks/useApiError';
+import { getErrorMessage } from '../../core/error-handling/errorMessages';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const { error: apiError, handleError, clearError } = useApiError();
   const [phonenumber, setPhonenumber] = useState<string>('');
   const [verify, setVerify] = useState<boolean>(false);
   const [resend, setResend] = useState<boolean>(false);
@@ -94,34 +97,70 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   };
 
-  // Helper function to extract error message from API error
-  const getErrorMessage = (error: FetchBaseQueryError | SerializedError | undefined): string => {
-    if (!error) return 'Unknown error occurred';
-    
-    if ('status' in error) {
-      // It's a FetchBaseQueryError
-      const fetchError = error as FetchBaseQueryError;
-      return (fetchError.data as any)?.message || 'An error occurred with the request';
-    }
-    
-    // It's a SerializedError
-    return error.message || 'An unexpected error occurred';
-  };
-
   const handleResendOTP = async (): Promise<void> => {
     try {
-      setLoading(true);
-      const response = await loginUser({ phoneNo: phonenumber });
-      
-      if ('error' in response) {
-        Alert.alert('Error', getErrorMessage(response.error));
-      } else {
+      const response = await loginUser({ phoneNo: phonenumber }).unwrap();
+      if (response) {
         setTimer(180);
         setResend(false);
-        ToastAndroid.show('OTP Resent Successfully', ToastAndroid.SHORT);
+        clearError();
+        ToastAndroid.show('OTP sent successfully', ToastAndroid.SHORT);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to resend OTP');
+      handleError('NETWORK_ERROR');
+      if (apiError) {
+        ToastAndroid.show(apiError, ToastAndroid.SHORT);
+      }
+    }
+  };
+
+  const handleVerifyOTP = async (): Promise<void> => {
+    try {
+      const otpString = otp.join('');
+      if (otpString.length !== 6) {
+        handleError('INVALID_OTP');
+        if (apiError) {
+          ToastAndroid.show(apiError, ToastAndroid.SHORT);
+        }
+        return;
+      }
+
+      setLoading(true);
+      const response = await verifyUser({
+        phoneNo: phonenumber,
+        otp: otpString,
+      }).unwrap();
+
+      if (response) {
+        // First update Redux state
+        dispatch(userLogin({
+          _id: response.user._id,
+          phoneNo: response.user.phoneNo || phonenumber,
+          name: response.user.name || 'User',
+          email: response.user.email,
+          address: response.user.address,
+          FavouriteProd: response.user.FavouriteProd || [],
+          isAdmin: response.user.isAdmin || false
+        }));
+        
+        // Then persist to storage
+        await setUser({
+          token: response.token,
+          user: {
+            ...response.user,
+            id: response.user._id
+          }
+        });
+        
+        clearError();
+        ToastAndroid.show('Login Successful', ToastAndroid.SHORT);
+        navigation.navigate('Home');
+      }
+    } catch (error) {
+      handleError('INVALID_CREDENTIALS');
+      if (apiError) {
+        ToastAndroid.show(apiError, ToastAndroid.SHORT);
+      }
     } finally {
       setLoading(false);
     }
@@ -129,85 +168,29 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const handleSubmit = async (): Promise<void> => {
     try {
-      setLoading(true);
-      
       if (!verify) {
         if (!validatePhoneNumber(phonenumber)) {
-          Alert.alert('Error', 'Please enter a valid 10-digit phone number');
-          return;
-        }
-
-        const response = await loginUser({ phoneNo: phonenumber });
-        if ('error' in response) {
-          Alert.alert('Error', getErrorMessage(response.error));
-          return;
-        }
-        
-        setVerify(true);
-        setTimer(180);
-        ToastAndroid.show('OTP Sent Successfully', ToastAndroid.SHORT);
-      } else {
-        const otpValue = otp.join('');
-        if (otpValue.length !== 6) {
-          Alert.alert('Error', 'Please enter a valid 6-digit OTP');
-          return;
-        }
-
-        const response = await verifyUser({
-          phoneNo: phonenumber,
-          otp: otpValue,
-        });
-
-        if ('error' in response) {
-          Alert.alert('Error', getErrorMessage(response.error));
-          return;
-        }
-
-        // Type assertion to access the data safely
-        const responseData = response.data as LoginResponse;
-        
-        if (!responseData?.token || !responseData?.user) {
-          Alert.alert('Error', 'Invalid response from server');
-          return;
-        }
-
-        // Extract user details from response
-        const userData = {
-          token: responseData.token,
-          user: {
-            id: responseData.user._id,
-            _id: responseData.user._id,
-            phoneNo: responseData.user.phoneNo || phonenumber,
-            name: responseData.user.name || '',
-            isAdmin: responseData.user.isAdmin || false,
-            email: responseData.user.email,
-            address: responseData.user.address,
-            FavouriteProd: responseData.user.FavouriteProd || []
+          handleError('INVALID_PHONE');
+          if (apiError) {
+            ToastAndroid.show(apiError, ToastAndroid.SHORT);
           }
-        };
+          return;
+        }
 
-        // First update Redux state
-        dispatch(userLogin({
-          id: response.data.user.id,
-          phoneNo: response.data.user.phoneNo || phonenumber,
-          name: response.data.user.name || 'User',
-          email: response.data.user.email,
-          address: response.data.user.address,
-          FavouriteProd: response.data.user.FavouriteProd || []
-        }));
-        
-        // Then persist to storage
-        await setUser(userData);
-        
-        ToastAndroid.show('Login Successful', ToastAndroid.SHORT);
-        navigation.navigate('Home');
+        const response = await loginUser({ phoneNo: phonenumber }).unwrap();
+        if (response) {
+          setVerify(true);
+          setTimer(180);
+          ToastAndroid.show('OTP Sent Successfully', ToastAndroid.SHORT);
+        }
+      } else {
+        await handleVerifyOTP();
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
     }
   };
+
   return (
     <View className=" flex-1 justify-center items-center w-full">
       <View className=" items-center w-full">
