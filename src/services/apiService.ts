@@ -105,6 +105,11 @@ class ApiService {
     return this.api.get(endpoint);
   }
 
+  // Search endpoint
+  searchProducts(query: string): Promise<AxiosResponse> {
+    return this.api.get(`search?q=${encodeURIComponent(query)}`);
+  }
+
   // Cart endpoints
   addToCart(data: { productId: string; quantity: number }): Promise<AxiosResponse> {
     return this.api.post('api/cart', data);
@@ -122,7 +127,6 @@ class ApiService {
   createOrder(data: any): Promise<AxiosResponse> {
     return this.api.post('api/orders', data);
   }
-
 
   getOrderDetails(orderId: string): Promise<AxiosResponse> {
     return this.api.get(`/api/orders/${orderId}`);
