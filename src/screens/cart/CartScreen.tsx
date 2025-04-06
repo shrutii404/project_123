@@ -4,6 +4,15 @@ import CloseIcon from '../../icons/CloseIcon';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearCart, removeProduct } from '../../store/slices/cartSlice';
+import { RootState } from '../../store';
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  images: string[];
+}
 
 const EmptyCart = () => {
   return (
@@ -16,10 +25,10 @@ const EmptyCart = () => {
   );
 };
 
-const Product = ({ data, key }) => {
+const Product = ({ data, key }: { data: CartItem; key: string }) => {
   const dispatch = useDispatch();
 
-  const handleRemove = (id) => {
+  const handleRemove = (id: string) => {
     dispatch(removeProduct(id));
   };
   return (
@@ -38,7 +47,7 @@ const Product = ({ data, key }) => {
 
           <View className="flex  flex-row justify-between text-sm">
             <View className="flex gap-1  flex-row">
-              <Text className="text-xs text-[#9d9ea2]">1 x</Text>
+              <Text className="text-xs text-[#9d9ea2]">{data?.quantity} x</Text>
               <Text className="font-semibold text-black">₹{data?.price}</Text>
               <Text className="text-[#0174be]">/piece</Text>
             </View>
@@ -54,14 +63,14 @@ const Product = ({ data, key }) => {
   );
 };
 
-const CartItems = ({ items }) => {
+const CartItems = ({ items }: { items: CartItem[] }) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const handleClearCart = () => {
     dispatch(clearCart());
   };
   const handleCheckout = () => {
-    navigation.navigate('Shopcart');
+    navigation.navigate('Shopcart' as never);
   };
   return (
     <View className="w-full">
@@ -87,7 +96,7 @@ const CartItems = ({ items }) => {
 };
 const CartScreen = () => {
   const navigation = useNavigation();
-  const items = useSelector((state) => state.cart.items);
+  const items = useSelector((state: RootState) => state.cart.items);
 
   const handleClose = () => {
     navigation.goBack();
@@ -96,7 +105,7 @@ const CartScreen = () => {
     <View className="p-5 bg-white flex-1 items-center">
       <View className="flex-row justify-between mt-3 items-center w-full ">
         <Text className="text-xl font-[500] w-fit text-[#212529]">
-          Your Cart <Text className="text-base text-[#9d9ea2]">({items?.length})</Text>
+          Your Cart <Text className="text-base text-[#9d9ea2]">({items?.reduce((total: number, item: CartItem) => total + (item.quantity || 0), 0)})</Text>
         </Text>
         <TouchableOpacity className="border rounded border-[#6c757d]" onPress={handleClose}>
           <CloseIcon />

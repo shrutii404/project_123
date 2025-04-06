@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, Pressable } from 'react-native';
-import { useModal } from '../context/ModalContext'; // Adjust the path as necessary
+import { useModal } from '../context/ModalContext';
 import UserIcon from '../icons/UserIcon';
 import SearchIcon from '../icons/SearchIcon';
 import CartIcon from '../icons/CartIcon';
@@ -12,12 +12,30 @@ import UserCheckedIcon from '../icons/UserCheckedIcons';
 import { userSlice } from '../store/slices/userSlice';
 import { useSearchBox } from '../context/SearchContext';
 import { removeUser } from '../utils/user';
+import { RootState } from '../store';
 
-const HeaderRight = ({ navigation }) => {
+interface HeaderRightProps {
+  navigation: {
+    navigate: (screen: string) => void;
+  };
+}
+
+interface CartItem {
+  id: string;
+  quantity: number;
+}
+
+interface UserDetails {
+  name: string;
+  phoneNo: string;
+  FavouriteProd?: string[];
+}
+
+const HeaderRight = ({ navigation }: HeaderRightProps) => {
   const { showModal, hideModal } = useModal();
   const { toggleSearchBar } = useSearchBox();
-  const cartitems = useSelector((state) => state.cart.items);
-  const userDetails = useSelector((state) => state.user.user);
+  const cartitems = useSelector((state: RootState) => state.cart.items) as CartItem[];
+  const userDetails = useSelector((state: RootState) => state.user.user) as UserDetails | null;
   const dispatch = useDispatch();
 
   const openUserModal = () => {
@@ -25,12 +43,12 @@ const HeaderRight = ({ navigation }) => {
       <View>
         <View className="flex-row items-center mb-3">
           <FontAwesome name="user-circle-o" size={20} color="#000" />
-          <Text className="text-black ml-2">{userDetails.name}</Text>
+          <Text className="text-black ml-2">{userDetails?.name}</Text>
         </View>
 
         <View className="flex-row items-center border-b border-gray-200 pb-3">
           <Ionicons name="call-outline" size={20} color="#000" />
-          <Text className="text-black ml-2">{userDetails.phoneNo}</Text>
+          <Text className="text-black ml-2">{userDetails?.phoneNo}</Text>
         </View>
 
         <Pressable
@@ -76,7 +94,7 @@ const HeaderRight = ({ navigation }) => {
       <TouchableOpacity onPress={() => navigation.navigate('Cart')} className="relative">
         {cartitems && cartitems.length > 0 && (
           <View className="absolute -top-1 right-1 bg-red-500 h-5 w-5 rounded-full z-20 items-center justify-center">
-            <Text className="text-[10px]">{cartitems.length}</Text>
+            <Text className="text-[10px]">{cartitems.reduce((total: number, item: CartItem) => total + (item.quantity || 0), 0)}</Text>
           </View>
         )}
         <CartIcon />

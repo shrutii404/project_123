@@ -70,7 +70,7 @@ const ProductDetailsScreen = ({ route }) => {
   };
 
   const handleAddToCart = () => {
-    dispatch(addProduct(productData));
+    dispatch(addProduct({ ...productData, quantity }));
   };
   return (
     <ScrollView className="bg-white">
