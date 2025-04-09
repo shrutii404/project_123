@@ -156,22 +156,9 @@ function HomeScreen({ navigation }: { navigation: any }) {
             Real Stories, Real Smiles: Hear What Our Customers Have to Say!
           </Text>
         </View>
+        <View className='m-4 w-full'>
         <HomeCarousel type="review" />
-        <View className="items-center w-full">
-          <Text className="text-black text-3xl font-bold my-10 w-[70%] text-center">
-            Frequently Asked Questions
-          </Text>
-          <Image
-            source={{
-              uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FFAQ.d9961481.jpg&w=2048&q=75',
-            }}
-            className="h-96 w-96"
-          />
         </View>
-        <View className="w-full">
-          <HomeFAQQuestions />
-        </View>
-        {/* <HomeFooter /> */}
       </View>
     </ScrollView>
   );

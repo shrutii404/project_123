@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from '../../types'; 
+import React, { createContext, useContext, useState} from 'react';
+import { Product } from '../types'; 
 import { useApiError } from '../core/hooks/useApiError';
 import { getErrorMessage } from '../core/error-handling/errorMessages';
 import ApiService from '../services/apiService';

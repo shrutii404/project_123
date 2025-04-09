@@ -144,7 +144,7 @@ const HomeCarousel = ({ type }) => {
         {type === 'herosection' ? (
           <Image source={item.uri} style={styles.image} />
         ) : (
-          <View className="w-[90%]  p-4 rounded-lg bg-white border border-gray-300 items-center flex-col  justify-center">
+          <View className="w-[90%] h-[200px] p-4 rounded-lg bg-white border border-gray-300 items-center flex-col  justify-center">
             <View>
               <View className="flex-row justify-center mb-2">
                 {Array.from({ length: item.rating }).map((_, index) => (
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     width: windowWidth,
-    height: 150,
+    minHeight: 150,
     justifyContent: 'center',
     alignItems: 'center',
   },

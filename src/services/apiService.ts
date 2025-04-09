@@ -133,7 +133,7 @@ class ApiService {
   }
 
   // Distance endpoints
-  getDistance(data: { lat: number; lng: number }): Promise<AxiosResponse> {
+  getDistance(data: { sourcePincode: number; destinationPincode: number }): Promise<AxiosResponse> {
     return this.api.post('/api/getDistance/isAvailable', data);
   }
 
