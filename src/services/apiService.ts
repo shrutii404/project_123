@@ -1,4 +1,9 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosResponse,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiEndpoint } from '../utils/constants';
 
@@ -77,6 +82,10 @@ class ApiService {
 
   resendOTP(data: { phoneNo: string }): Promise<AxiosResponse> {
     return this.api.post('login/resendOTP', data);
+  }
+
+  verifyToken(data: { token: string }): Promise<AxiosResponse> {
+    return this.api.post('verifyToken', data);
   }
 
   // User endpoints

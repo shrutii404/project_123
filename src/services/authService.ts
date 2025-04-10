@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import apiService from './apiService';
+import { removeUser } from '../utils/user';
 
 const AUTH_TOKEN_KEY = 'authToken';
 const USER_DETAILS_KEY = 'userDetails';
@@ -35,9 +36,24 @@ class AuthService {
 
       if (userDetailsStr && token) {
         const userDetails = JSON.parse(userDetailsStr);
-        this.currentUser = { ...userDetails, token };
-        // Set the token in API service
-        apiService.setAuthToken(token);
+        try {
+          // Verify token with the server
+          const response = await apiService.verifyToken({ token });
+          if (response.data?.isValid) {
+            this.currentUser = { ...userDetails, token };
+            // Set the token in API service
+            apiService.setAuthToken(token);
+          } else {
+            // Token is invalid, logout the user
+            await this.logout();
+            return;
+          }
+        } catch (error) {
+          console.error('Error verifying token:', error);
+          // If token verification fails, also logout the user
+          await this.logout();
+          return;
+        }
       }
     } catch (error) {
       console.error('Error initializing auth service:', error);
@@ -57,7 +73,10 @@ class AuthService {
     }
   }
 
-  async verifyOTP(phoneNo: string, otp: string): Promise<{ success: boolean; error?: string; user?: AuthUser }> {
+  async verifyOTP(
+    phoneNo: string,
+    otp: string
+  ): Promise<{ success: boolean; error?: string; user?: AuthUser }> {
     try {
       const response = await apiService.verifyUser({ phoneNo, otp });
       if (response.data) {
