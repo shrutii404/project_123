@@ -7,6 +7,7 @@ const AUTH_TOKEN_KEY = 'authToken';
 const USER_DETAILS_KEY = 'userDetails';
 
 export interface AuthUser {
+  _id: string;
   id: string;
   name: string;
   phoneNo: string;
@@ -27,7 +28,7 @@ class AuthService {
     return AuthService.instance;
   }
 
-  async initialize(): Promise<void> {
+  async initialize(): Promise<AuthUser | null> {
     try {
       const [userDetailsStr, token] = await Promise.all([
         AsyncStorage.getItem(USER_DETAILS_KEY),
@@ -37,11 +38,12 @@ class AuthService {
       if (userDetailsStr && token) {
         const userDetails = JSON.parse(userDetailsStr);
         this.currentUser = { ...userDetails, token };
-        apiService.setAuthToken(token);
+        return this.currentUser;
       }
     } catch (error) {
       console.error('Error initializing auth service:', error);
     }
+    return null;
   }
 
   async login(phoneNo: string): Promise<{ success: boolean; error?: string }> {
@@ -66,6 +68,7 @@ class AuthService {
       if (response.data) {
         const { token, user } = response.data;
         const authUser: AuthUser = {
+          _id: user.id,
           id: user.id,
           name: user.name,
           phoneNo: user.phoneNo,
@@ -90,7 +93,6 @@ class AuthService {
         AsyncStorage.removeItem(USER_DETAILS_KEY),
       ]);
       this.currentUser = null;
-      apiService.clearAuthToken();
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -103,7 +105,6 @@ class AuthService {
         AsyncStorage.setItem(USER_DETAILS_KEY, JSON.stringify(user)),
       ]);
       this.currentUser = user;
-      apiService.setAuthToken(user.token);
     } catch (error) {
       console.error('Error saving auth data:', error);
       throw error;

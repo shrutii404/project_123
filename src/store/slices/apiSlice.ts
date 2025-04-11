@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiEndpoint } from '../../utils/constants';
+import apiService from '../../services/apiService';
 import refreshToken from './userSlice';
 import { userSlice } from './userSlice';
 import {

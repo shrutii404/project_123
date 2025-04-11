@@ -24,9 +24,7 @@ class ApiService {
     this.api.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
         try {
-          const userDetailsString = await AsyncStorage.getItem('userDetails');
-          const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
-          const token = userDetails?.token;
+          const token = await AsyncStorage.getItem('authToken');
 
           if (token && config.headers) {
             config.headers['Authorization'] = `Bearer ${token}`;
@@ -57,18 +55,6 @@ class ApiService {
       ApiService.instance = new ApiService();
     }
     return ApiService.instance;
-  }
-
-  setAuthToken(token: string): void {
-    if (this.api.defaults.headers.common) {
-      this.api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
-  }
-
-  clearAuthToken(): void {
-    if (this.api.defaults.headers.common) {
-      delete this.api.defaults.headers.common['Authorization'];
-    }
   }
 
   // Auth endpoints
