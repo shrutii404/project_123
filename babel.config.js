@@ -1,4 +1,12 @@
-export default {
-  presets: ['module:@react-native/babel-preset'],
-  plugins: ['nativewind/babel', 'react-native-reanimated/plugin'],
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: [
+      // Required for NativeWind
+      'nativewind/babel',
+      // Required for react-native-reanimated (must be last)
+      'react-native-reanimated/plugin',
+    ],
+  };
 };

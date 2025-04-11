@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { FontAwesome } from '@expo/vector-icons';
 import { ErrorBoundary } from './src/core/error-handling/ErrorBoundary';
 import { Image, TouchableOpacity, View } from 'react-native';
 import HomeScreen from './src/screens/Home/HomeScreen';
@@ -29,7 +30,6 @@ import ShippingPolicy from './src/screens/ShippingPolicy/ShippingPolicy';
 import RefundPolicy from './src/screens/RefundPolicy/RefundPolicy';
 import AboutScreen from './src/screens/AboutScreen/AboutScreen';
 
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 
 const Stack = createNativeStackNavigator();
@@ -250,7 +250,7 @@ function App(): React.JSX.Element {
                       drawerLabel: 'Home',
                       headerShown: false,
                       drawerIcon: ({ color, size }) => (
-                        <Icon name="home" color={color} size={size} />
+                        <FontAwesome name="home" color={color} size={size} />
                       ),
                     }}
                   />
@@ -262,7 +262,7 @@ function App(): React.JSX.Element {
                     options={{
                       drawerLabel: 'About Us',
                       drawerIcon: ({ color, size }) => (
-                        <Icon name="info" color={color} size={size} />
+                        <FontAwesome name="info-circle" color={color} size={size} />
                       ),
                     }}
                   />
@@ -274,7 +274,7 @@ function App(): React.JSX.Element {
                     options={{
                       drawerLabel: 'Privacy Policy',
                       drawerIcon: ({ color, size }) => (
-                        <Icon name="lock" color={color} size={size} />
+                        <FontAwesome name="lock" color={color} size={size} />
                       ),
                     }}
                   />
@@ -286,7 +286,7 @@ function App(): React.JSX.Element {
                     options={{
                       drawerLabel: 'Terms & Services',
                       drawerIcon: ({ color, size }) => (
-                        <Icon name="description" color={color} size={size} />
+                        <FontAwesome name="file-text" color={color} size={size} />
                       ),
                     }}
                   />
@@ -298,7 +298,7 @@ function App(): React.JSX.Element {
                     options={{
                       drawerLabel: 'Shipping Policy',
                       drawerIcon: ({ color, size }) => (
-                        <Icon name="local-shipping" color={color} size={size} />
+                        <FontAwesome name="truck" color={color} size={size} />
                       ),
                     }}
                   />
@@ -310,7 +310,7 @@ function App(): React.JSX.Element {
                     options={{
                       drawerLabel: 'Refund Policy',
                       drawerIcon: ({ color, size }) => (
-                        <Icon name="attach-money" color={color} size={size} />
+                        <FontAwesome name="money" color={color} size={size} />
                       ),
                     }}
                   />
