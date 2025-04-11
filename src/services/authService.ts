@@ -36,24 +36,8 @@ class AuthService {
 
       if (userDetailsStr && token) {
         const userDetails = JSON.parse(userDetailsStr);
-        try {
-          // Verify token with the server
-          const response = await apiService.verifyToken({ token });
-          if (response.data?.isValid) {
-            this.currentUser = { ...userDetails, token };
-            // Set the token in API service
-            apiService.setAuthToken(token);
-          } else {
-            // Token is invalid, logout the user
-            await this.logout();
-            return;
-          }
-        } catch (error) {
-          console.error('Error verifying token:', error);
-          // If token verification fails, also logout the user
-          await this.logout();
-          return;
-        }
+        this.currentUser = { ...userDetails, token };
+        apiService.setAuthToken(token);
       }
     } catch (error) {
       console.error('Error initializing auth service:', error);

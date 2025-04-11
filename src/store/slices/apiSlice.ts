@@ -1,13 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiEndpoint } from '../../utils/constants';
-import { 
-  LoginRequest, 
-  VerifyOtpRequest, 
-  LoginResponse, 
-  ResendOtpRequest, 
+import refreshToken from './userSlice';
+import { userSlice } from './userSlice';
+import {
+  LoginRequest,
+  VerifyOtpRequest,
+  LoginResponse,
+  ResendOtpRequest,
   User,
-  UserAddress
+  UserAddress,
 } from '../../types/auth';
 
 const baseUrl = apiEndpoint;
@@ -26,15 +28,60 @@ const baseQuery = fetchBaseQuery({
     } catch (error) {
       console.error('Error setting auth header:', error);
     }
-    return headers;
+    let newHeaders = headers;
+    try {
+      const userDetailsString = await AsyncStorage.getItem('userDetails');
+      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
+      let token = userDetails?.token;
+
+      if (token) {
+        newHeaders.set('Authorization', `Bearer ${token}`);
+      }
+    } catch (error) {
+      console.error('Error setting auth header:', error);
+    }
+    return newHeaders;
   },
 });
 
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+  let result = await baseQuery(args, api, extraOptions);
+  if (result.error && result.error.status === 401) {
+    // try to get a new token
+    try {
+      const refreshResult = await api.dispatch(refreshToken);
+      if (refreshResult?.payload?.token) {
+        // store the new token
+        const userDetailsString = await AsyncStorage.getItem('userDetails');
+        const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
+        if (userDetails) {
+          userDetails.token = refreshResult.payload.token;
+          await AsyncStorage.setItem('userDetails', JSON.stringify(userDetails));
+          // retry the initial query
+          result = await baseQuery(args, api, extraOptions);
+        }
+      } else {
+        api.dispatch(userSlice.actions.userLogout());
+      }
+    } catch (refreshError) {
+      console.error('Error refreshing token:', refreshError);
+      api.dispatch(userSlice.actions.userLogout());
+    }
+  }
+  return result;
+};
+
 export const apiSlice = createApi({
   reducerPath: 'api',
-  baseQuery: baseQuery,
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['User'],
   endpoints: (builder) => ({
+    refreshToken: builder.mutation<{ token: string }, void>({
+      query: () => ({
+        url: 'login/refreshToken',
+        method: 'POST',
+      }),
+    }),
     // Authentication endpoints
     loginUser: builder.mutation<{ message: string }, LoginRequest>({
       query: (data) => ({
@@ -57,7 +104,7 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
-    
+
     // Category endpoints
     getCategories: builder.query<any, string | null>({
       query: (id) => {
@@ -65,7 +112,7 @@ export const apiSlice = createApi({
         return endpoint;
       },
     }),
-    
+
     // User endpoints
     updateUserDetails: builder.mutation<User, Partial<User>>({
       query: (data) => ({
@@ -82,7 +129,7 @@ export const apiSlice = createApi({
       },
       providesTags: ['User'],
     }),
-    
+
     // Product endpoints
     getProducts: builder.query<any, string | null>({
       query: (id) => {
@@ -96,9 +143,9 @@ export const apiSlice = createApi({
         return endpoint;
       },
     }),
-    
+
     // Wishlist endpoints
-    addToWishlist: builder.mutation<any, { userId: string, productId: string }>({
+    addToWishlist: builder.mutation<any, { userId: string; productId: string }>({
       query: ({ userId, productId }) => ({
         url: `api/users/${userId}/addWishlist`,
         method: 'POST',
@@ -106,7 +153,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['User'],
     }),
-    removeWishlist: builder.mutation<any, { userId: string, productId: string }>({
+    removeWishlist: builder.mutation<any, { userId: string; productId: string }>({
       query: ({ userId, productId }) => ({
         url: `api/users/${userId}/removeWishlist`,
         method: 'POST',

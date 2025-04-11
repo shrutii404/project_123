@@ -1,13 +1,13 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect } from 'react';
+import React from 'react';
 import { ErrorBoundary } from './src/core/error-handling/ErrorBoundary';
 import { Image, TouchableOpacity, View } from 'react-native';
 import HomeScreen from './src/screens/Home/HomeScreen';
 import LoginScreen from './src/screens/Auth/LoginScreen';
 
 import MenuIcon from './src/icons/MenuIcon';
-import { Provider, useDispatch, useSelector } from 'react-redux';
+import { Provider } from 'react-redux';
 import store from './src/store';
 import { ModalProvider } from './src/context/ModalContext';
 import HeaderRight from './src/components/HeaderRight';
@@ -30,46 +30,13 @@ import RefundPolicy from './src/screens/RefundPolicy/RefundPolicy';
 import AboutScreen from './src/screens/AboutScreen/AboutScreen';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { getUser } from './src/utils/user';
-import { userSlice } from './src/store/slices/userSlice';
-import { AuthProvider } from './src/context/AuthContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 function HomeStack() {
-  const user = useSelector((state: any) => state.user);
-  const dispatch = useDispatch();
-
-  const setAuth = useCallback(async () => {
-    try {
-      const userData = await getUser();
-      if (userData?.token && userData?.user) {
-        // Map the user data from storage to match the expected format in the store
-        const userId = userData.user._id || userData.user.id;
-        dispatch(userSlice.actions.userLogin({
-          id: userId, // Primary ID field
-          _id: userId, // Support MongoDB style ID
-          phoneNo: userData.user.phoneNo,
-          name: userData.user.name || 'User',
-          email: userData.user.email,
-          address: userData.user.address,
-          FavouriteProd: userData.user.FavouriteProd || [],
-          isAdmin: userData.user.isAdmin || false
-        }));
-      }
-    } catch (error) {
-      console.error('Error restoring auth state:', error);
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    const prepare = async () => {
-      await setAuth();
-    };
-
-    prepare();
-  }, [setAuth]);
+  const { user } = useAuth();
 
   return (
     <Stack.Navigator initialRouteName="Home">
@@ -254,101 +221,107 @@ function HomeStack() {
 }
 
 function App(): React.JSX.Element {
-return (
-<ErrorBoundary>
-<Provider store={store}>
-<AuthProvider>
-<ModalProvider>
-<SearchProvider>
-<NavigationContainer>
-<Drawer.Navigator
-initialRouteName="HomeStack"
-screenOptions={{
-drawerStyle: {
-backgroundColor: '#f4f4f4', // Light background
-width: 240, // Drawer width
-},
-drawerActiveTintColor: '#6200EE', // Active item color
-drawerInactiveTintColor: '#555', // Inactive item color
-drawerLabelStyle: {
-fontSize: 16, // Label font size
-},
-}}
->
-{/* Home Screen */}
-<Drawer.Screen
-name="Home"
-component={HomeStack}
-options={{
-drawerLabel: 'Home',
-headerShown: false,
-drawerIcon: ({ color, size }) => <Icon name="home" color={color} size={size} />,
-}}
-/>
+  return (
+    <ErrorBoundary>
+      <Provider store={store}>
+        <AuthProvider>
+          <ModalProvider>
+            <SearchProvider>
+              <NavigationContainer>
+                <Drawer.Navigator
+                  initialRouteName="HomeStack"
+                  screenOptions={{
+                    drawerStyle: {
+                      backgroundColor: '#f4f4f4', // Light background
+                      width: 240, // Drawer width
+                    },
+                    drawerActiveTintColor: '#6200EE', // Active item color
+                    drawerInactiveTintColor: '#555', // Inactive item color
+                    drawerLabelStyle: {
+                      fontSize: 16, // Label font size
+                    },
+                  }}
+                >
+                  {/* Home Screen */}
+                  <Drawer.Screen
+                    name="Home"
+                    component={HomeStack}
+                    options={{
+                      drawerLabel: 'Home',
+                      headerShown: false,
+                      drawerIcon: ({ color, size }) => (
+                        <Icon name="home" color={color} size={size} />
+                      ),
+                    }}
+                  />
 
-{/* About Screen */}
-<Drawer.Screen
-name="About"
-component={AboutScreen}
-options={{
-drawerLabel: 'About Us',
-drawerIcon: ({ color, size }) => <Icon name="info" color={color} size={size} />,
-}}
-/>
+                  {/* About Screen */}
+                  <Drawer.Screen
+                    name="About"
+                    component={AboutScreen}
+                    options={{
+                      drawerLabel: 'About Us',
+                      drawerIcon: ({ color, size }) => (
+                        <Icon name="info" color={color} size={size} />
+                      ),
+                    }}
+                  />
 
-{/* Policy Screen */}
-<Drawer.Screen
-name="Policy"
-component={PolicyScreen}
-options={{
-drawerLabel: 'Privacy Policy',
-drawerIcon: ({ color, size }) => <Icon name="lock" color={color} size={size} />,
-}}
-/>
+                  {/* Policy Screen */}
+                  <Drawer.Screen
+                    name="Policy"
+                    component={PolicyScreen}
+                    options={{
+                      drawerLabel: 'Privacy Policy',
+                      drawerIcon: ({ color, size }) => (
+                        <Icon name="lock" color={color} size={size} />
+                      ),
+                    }}
+                  />
 
-{/* Terms & Services */}
-<Drawer.Screen
-name="Terms & Services"
-component={TermsAndServices}
-options={{
-drawerLabel: 'Terms & Services',
-drawerIcon: ({ color, size }) => (
-<Icon name="description" color={color} size={size} />
-),
-}}
-/>
+                  {/* Terms & Services */}
+                  <Drawer.Screen
+                    name="Terms & Services"
+                    component={TermsAndServices}
+                    options={{
+                      drawerLabel: 'Terms & Services',
+                      drawerIcon: ({ color, size }) => (
+                        <Icon name="description" color={color} size={size} />
+                      ),
+                    }}
+                  />
 
-{/* Shipping Policy */}
-<Drawer.Screen
-name="Shipping Policy"
-component={ShippingPolicy}
-options={{
-drawerLabel: 'Shipping Policy',
-drawerIcon: ({ color, size }) => (
-<Icon name="local-shipping" color={color} size={size} />
-),
-}}
-/>
+                  {/* Shipping Policy */}
+                  <Drawer.Screen
+                    name="Shipping Policy"
+                    component={ShippingPolicy}
+                    options={{
+                      drawerLabel: 'Shipping Policy',
+                      drawerIcon: ({ color, size }) => (
+                        <Icon name="local-shipping" color={color} size={size} />
+                      ),
+                    }}
+                  />
 
-{/* Refund Policy */}
-<Drawer.Screen
-name="Refund Policy"
-component={RefundPolicy}
-options={{
-drawerLabel: 'Refund Policy',
-drawerIcon: ({ color, size }) => (
-<Icon name="attach-money" color={color} size={size} />
-),
-}}
-/>
-</Drawer.Navigator>
-</NavigationContainer>
-</SearchProvider>
-</ModalProvider>
-</AuthProvider>
-</Provider>
-</ErrorBoundary>
-);
+                  {/* Refund Policy */}
+                  <Drawer.Screen
+                    name="Refund Policy"
+                    component={RefundPolicy}
+                    options={{
+                      drawerLabel: 'Refund Policy',
+                      drawerIcon: ({ color, size }) => (
+                        <Icon name="attach-money" color={color} size={size} />
+                      ),
+                    }}
+                  />
+                </Drawer.Navigator>
+              </NavigationContainer>
+            </SearchProvider>
+          </ModalProvider>
+        </AuthProvider>
+      </Provider>
+    </ErrorBoundary>
+  );
 }
 
 export default App;
