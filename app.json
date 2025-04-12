@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#242523"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.steploops.hurlahardwares"
@@ -26,6 +28,12 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "8f2d40e1-ee3c-4bce-9d29-f1476b713bb8"
+      }
+    },
+    "owner": "steploops"
   }
 }
