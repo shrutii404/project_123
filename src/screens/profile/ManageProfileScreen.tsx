@@ -10,13 +10,20 @@ import {
   Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import Icon from 'react-native-vector-icons/FontAwesome5';
+import {
+  FontAwesome5 as Icon,
+  Ionicons,
+  AntDesign as AntIcons,
+  MaterialIcons,
+} from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import AntIcons from 'react-native-vector-icons/AntDesign';
-import { useGetProductVariationsQuery, useUpdateUserDetailsMutation } from '../../store/slices/apiSlice';
-import apiService from '../../services/apiService';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {
+  useGetProductVariationsQuery,
+  useUpdateUserDetailsMutation,
+  useGetUserDetailsByIdQuery,
+  useLazyGetUserDetailsByIdQuery,
+} from '../../store/slices/apiSlice';
+// import apiService from '../../services/apiService'; // No longer needed
 import OrderTable from '../../components/OrderTable';
 import { userSlice } from '../../store/slices/userSlice';
 import ShimmerEffect from '../../components/ShimmerEffect';
@@ -54,10 +61,10 @@ const ManageProfileScreen = () => {
   const [modalType, setModalType] = useState('editName');
   const [reviews, setReviews] = useState<Review[]>([]);
   const [address, setAddress] = useState<UserAddress[]>([]);
-  const [details, setDetails] = useState<UserFormDetails>({ 
-    first: '', 
+  const [details, setDetails] = useState<UserFormDetails>({
+    first: '',
     last: '',
-    email: '' 
+    email: '',
   });
   const [shipping, setShipping] = useState<UserAddress>({
     street: '',
@@ -72,7 +79,7 @@ const ManageProfileScreen = () => {
     error: productsError,
     isLoading: productLoading,
   } = useGetProductVariationsQuery('');
-  
+
   const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserDetailsMutation();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
@@ -89,7 +96,7 @@ const ManageProfileScreen = () => {
       setDetails({
         first: nameParts[0] || '',
         last: nameParts[1] || '',
-        email: userDetails.email || ''
+        email: userDetails.email || '',
       });
     }
     setModalVisible(true);
@@ -116,7 +123,7 @@ const ManageProfileScreen = () => {
       postalCode: addr.postalCode || '',
       city: addr.city || '',
       id: addr.id,
-      addressId: addr.addressId
+      addressId: addr.addressId,
     });
     setModalVisible(true);
   };
@@ -125,9 +132,9 @@ const ManageProfileScreen = () => {
     try {
       setLoading(true);
       const result = await updateUser({
-        deleteAddressId: id
+        deleteAddressId: id,
       }).unwrap();
-      
+
       if (result) {
         const updatedAddresses = address.filter((addr) => (addr.id || addr.addressId) !== id);
         setAddress(updatedAddresses);
@@ -149,6 +156,12 @@ const ManageProfileScreen = () => {
     setDetails((prev) => ({ ...prev, [key]: value }));
   };
 
+  // Use RTK Query to fetch user details
+  const [
+    triggerGetUserDetails,
+    { data: userData, isLoading: isUserDetailsLoading, isError: isUserDetailsError },
+  ] = useLazyGetUserDetailsByIdQuery();
+
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
@@ -156,36 +169,36 @@ const ManageProfileScreen = () => {
         setLoading(false);
         return;
       }
-      
-      const response = await apiService.getUserDetails(userDetails.id);
-      const userData = response.data;
 
-      if (userData) {
+      // Trigger the RTK Query to fetch user details
+      const result = await triggerGetUserDetails(userDetails.id).unwrap();
+
+      if (result) {
         // Update Redux store with latest user data
-        dispatch(userSlice.actions.updateUserDetails(userData));
-        
+        dispatch(userSlice.actions.updateUserDetails(result));
+
         // Update local state
-        if (userData.name) {
-          const nameParts = userData.name.split(' ');
+        if (result.name) {
+          const nameParts = result.name.split(' ');
           setDetails({
             first: nameParts[0] || '',
             last: nameParts[1] || '',
-            email: userData.email || ''
+            email: result.email || '',
           });
         }
-        
+
         // Handle address data
-        if (userData.address) {
-          setAddress(Array.isArray(userData.address) ? userData.address : [userData.address]);
+        if (result.address) {
+          setAddress(Array.isArray(result.address) ? result.address : [result.address]);
         }
-        
+
         // Process reviews data with product information
-        if (userData.reviews && products) {
-          const updatedReviews = userData.reviews.map((review: Review) => {
+        if (result.reviews && products) {
+          const updatedReviews = result.reviews.map((review: Review) => {
             const product = products.find((p: any) => p.id === review.productId);
             return {
               ...review,
-              productName: product?.name || 'Unknown Product'
+              productName: product?.name || 'Unknown Product',
             };
           });
           setReviews(updatedReviews);
@@ -212,15 +225,17 @@ const ManageProfileScreen = () => {
         Alert.alert('Error', 'Please enter both first and last name.');
         return;
       }
-      
+
       const result = await updateUser({
         name: `${details.first} ${details.last}`.trim(),
       }).unwrap();
-      
+
       if (result) {
-        dispatch(userSlice.actions.updateUserDetails({ 
-          name: `${details.first} ${details.last}`.trim() 
-        }));
+        dispatch(
+          userSlice.actions.updateUserDetails({
+            name: `${details.first} ${details.last}`.trim(),
+          })
+        );
         ToastAndroid.show('Name updated successfully!', ToastAndroid.SHORT);
       }
     } catch (error) {
@@ -238,11 +253,11 @@ const ManageProfileScreen = () => {
         Alert.alert('Error', 'Please enter an email address');
         return;
       }
-      
+
       const result = await updateUser({
         email: details.email.trim(),
       }).unwrap();
-      
+
       if (result) {
         dispatch(userSlice.actions.updateUserDetails({ email: result.email }));
         ToastAndroid.show('Email updated successfully!', ToastAndroid.SHORT);
@@ -262,13 +277,13 @@ const ManageProfileScreen = () => {
         address: {
           ...shipping,
           country: shipping.country || 'India',
-        }
+        },
       }).unwrap();
-      
+
       if (result) {
         dispatch(userSlice.actions.updateUserDetails({ address: result.address }));
         ToastAndroid.show(
-          `Address ${modalType === 'addAddress' ? 'added' : 'updated'} successfully!`, 
+          `Address ${modalType === 'addAddress' ? 'added' : 'updated'} successfully!`,
           ToastAndroid.SHORT
         );
         setShipping({
@@ -446,7 +461,10 @@ const ManageProfileScreen = () => {
                     <TouchableOpacity onPress={() => handleEditAddress(a)}>
                       <Icon name="edit" color="#000" size={20} />
                     </TouchableOpacity>
-                    <TouchableOpacity className="ml-3" onPress={() => handleDeleteAddress(a.id || a.addressId || '')}>
+                    <TouchableOpacity
+                      className="ml-3"
+                      onPress={() => handleDeleteAddress(a.id || a.addressId || '')}
+                    >
                       <AntIcons name="delete" size={20} color="red" />
                     </TouchableOpacity>
                   </View>

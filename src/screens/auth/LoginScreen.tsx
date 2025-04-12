@@ -10,35 +10,30 @@ import {
   ToastAndroid,
 } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {
-  useLoginUserMutation,
-  useVerifyUserMutation,
-  useResendOTPMutation,
-} from '../../store/slices/apiSlice';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import { SerializedError } from '@reduxjs/toolkit';
-import { LoginResponse } from '../../types/auth';
-import { useDispatch } from 'react-redux';
-import { userLogin } from '../../store/slices/userSlice';
-import { setUser } from '../../utils/user';
+// Removed duplicated React Native import block below
+import { Ionicons } from '@expo/vector-icons'; // Correct import for Expo projects
+// Removed direct RTK Query mutation hooks (useLoginUserMutation, useVerifyUserMutation, useResendOTPMutation)
+// Removed FetchBaseQueryError, SerializedError, LoginResponse imports (handled in context)
+// Removed useDispatch, userLogin imports (handled in context)
+// Removed setUser import (no longer exists/needed)
 import { LoginScreenProps } from '../../types/auth';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const { error: apiError, handleError, clearError } = useApiError();
+  const { error: apiError, handleError, clearError } = useApiError(); // Keep custom error handling for now
+  const { login, verifyOTP, isLoading: isAuthLoading, error: authError } = useAuth(); // Get functions and loading state from context
   const [phonenumber, setPhonenumber] = useState<string>('');
-  const [verify, setVerify] = useState<boolean>(false);
-  const [resend, setResend] = useState<boolean>(false);
+  const [verify, setVerify] = useState<boolean>(false); // State to track if OTP view is shown
+  const [resend, setResend] = useState<boolean>(false); // State for resend button visibility
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
-  const [loading, setLoading] = useState<boolean>(false);
+  // const [loading, setLoading] = useState<boolean>(false); // Remove local loading, use isAuthLoading
   const inputRefs = useRef<Array<TextInput | null>>([]);
   const [timer, setTimer] = useState<number>(180); // 180 seconds = 3 minutes
+  const [isSubmitting, setIsSubmitting] = useState(false); // Local state for button loading indicator
 
-  const [loginUser] = useLoginUserMutation();
-  const [verifyUser] = useVerifyUserMutation();
-  const dispatch = useDispatch();
+  // Removed direct mutation hooks and dispatch
 
   const validatePhoneNumber = (phone: string): boolean => {
     const phoneRegex = /^[6-9]\d{9}$/;
@@ -92,102 +87,113 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       setOtp(new Array(6).fill(''));
       setTimer(180);
       setResend(false);
+      clearError();
     } else {
       navigation.navigate('Home');
     }
   };
 
   const handleResendOTP = async (): Promise<void> => {
+    setIsSubmitting(true);
     try {
-      const response = await loginUser({ phoneNo: phonenumber }).unwrap();
-      if (response) {
+      // Use the login function from useAuth context
+      const result = await login(phonenumber);
+      // Check if the mutation was successful (result might not have specific data if just sending OTP)
+      if (result.success) {
         setTimer(180);
         setResend(false);
         clearError();
-        ToastAndroid.show('OTP sent successfully', ToastAndroid.SHORT);
+        ToastAndroid.show('OTP resent successfully', ToastAndroid.SHORT);
+      } else {
+        // Handle potential errors from the login mutation if needed
+        handleError('NETWORK_ERROR'); // Or use error from result.error
+        ToastAndroid.show(result.error || getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
       }
     } catch (error) {
+      // Catch errors if login promise rejects unexpectedly
       handleError('NETWORK_ERROR');
-      if (apiError) {
-        ToastAndroid.show(apiError, ToastAndroid.SHORT);
-      }
+      ToastAndroid.show(getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleVerifyOTP = async (): Promise<void> => {
+    const otpString = otp.join('');
+    if (otpString.length !== 6) {
+      handleError('INVALID_OTP');
+      ToastAndroid.show(getErrorMessage('INVALID_OTP'), ToastAndroid.SHORT);
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      const otpString = otp.join('');
-      if (otpString.length !== 6) {
-        handleError('INVALID_OTP');
-        if (apiError) {
-          ToastAndroid.show(apiError, ToastAndroid.SHORT);
-        }
-        return;
-      }
+      // Use the verifyOTP function from useAuth context
+      const result = await verifyOTP(phonenumber, otpString);
 
-      setLoading(true);
-      const response = await verifyUser({
-        phoneNo: phonenumber,
-        otp: otpString,
-      }).unwrap();
-
-      if (response) {
-        // First update Redux state
-        dispatch(userLogin({
-          _id: response.user._id,
-          phoneNo: response.user.phoneNo || phonenumber,
-          name: response.user.name || 'User',
-          email: response.user.email,
-          address: response.user.address,
-          FavouriteProd: response.user.FavouriteProd || [],
-          isAdmin: response.user.isAdmin || false
-        }));
-        
-        // Then persist to storage
-        await setUser({
-          token: response.token,
-          user: {
-            ...response.user,
-            id: response.user._id
-          }
-        });
-        
+      if (result.success) {
         clearError();
         ToastAndroid.show('Login Successful', ToastAndroid.SHORT);
+        // Navigation should happen automatically if AuthGuard is set up correctly,
+        // or you can navigate explicitly after successful verification.
         navigation.navigate('Home');
+      } else {
+        // Use the error message provided by verifyOTP
+        handleError('INVALID_CREDENTIALS'); // Keep custom error type if needed
+        ToastAndroid.show(
+          result.error || getErrorMessage('INVALID_CREDENTIALS'),
+          ToastAndroid.SHORT
+        );
       }
     } catch (error) {
+      // Catch unexpected errors from verifyOTP promise
       handleError('INVALID_CREDENTIALS');
-      if (apiError) {
-        ToastAndroid.show(apiError, ToastAndroid.SHORT);
-      }
+      ToastAndroid.show(getErrorMessage('INVALID_CREDENTIALS'), ToastAndroid.SHORT);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleSubmit = async (): Promise<void> => {
+    setIsSubmitting(true);
+    clearError(); // Clear previous errors
+
     try {
       if (!verify) {
+        // If in phone number entry stage
         if (!validatePhoneNumber(phonenumber)) {
           handleError('INVALID_PHONE');
-          if (apiError) {
-            ToastAndroid.show(apiError, ToastAndroid.SHORT);
-          }
+          ToastAndroid.show(getErrorMessage('INVALID_PHONE'), ToastAndroid.SHORT);
+          setIsSubmitting(false);
           return;
         }
-
-        const response = await loginUser({ phoneNo: phonenumber }).unwrap();
-        if (response) {
-          setVerify(true);
-          setTimer(180);
+        // Use the login function from useAuth context to send OTP
+        const result = await login(phonenumber);
+        if (result.success) {
+          setVerify(true); // Show OTP input view
+          setTimer(180); // Reset timer
+          setResend(false); // Hide resend initially
           ToastAndroid.show('OTP Sent Successfully', ToastAndroid.SHORT);
+        } else {
+          // Handle error from login mutation
+          handleError('NETWORK_ERROR'); // Or use error from result.error
+          ToastAndroid.show(result.error || getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
         }
       } else {
+        // If in OTP verification stage
         await handleVerifyOTP();
       }
     } catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred');
+      // Catch unexpected errors
+      console.error('Submit error:', error);
+      Alert.alert('Error', 'An unexpected error occurred during submission.');
+      handleError('GENERIC_ERROR'); // Set a generic error state
+    } finally {
+      // Only set isSubmitting false if not navigating away on success
+      // Since handleVerifyOTP might navigate, this might cause a state update on unmounted component
+      // Consider handling navigation state more carefully if issues arise.
+      // For now, let's set it here.
+      setIsSubmitting(false);
     }
   };
 
@@ -259,17 +265,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           {resend && (
             <TouchableOpacity
               className=" border border-gray-400 mt-2 w-full p-3 items-center rounded-md "
-              onPress={handleSubmit}
+              onPress={handleResendOTP} // Use dedicated resend handler
+              disabled={isSubmitting || isAuthLoading} // Disable while submitting/loading
             >
-              <Text className="text-black ">Resend</Text>
+              {isSubmitting ? (
+                <ActivityIndicator color="#000" />
+              ) : (
+                <Text className="text-black ">Resend</Text>
+              )}
             </TouchableOpacity>
           )}
           <TouchableOpacity
             className="bg-black mt-2 w-full p-3 items-center rounded-md "
-            onPress={handleSubmit}
+            onPress={handleSubmit} // Main submit handler
+            disabled={isSubmitting || isAuthLoading} // Disable while submitting/loading
           >
-            {loading ? (
-              <ActivityIndicator />
+            {isSubmitting ? ( // Use local isSubmitting for button indicator
+              <ActivityIndicator color="#fff" />
             ) : verify ? (
               <Text className="text-white ">Verify</Text>
             ) : (

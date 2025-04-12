@@ -3,41 +3,40 @@ import { User } from '../../types/auth';
 
 interface UserState {
   user: User | null;
+  error: string | null;
 }
 
-const initialState: UserState = { user: null };
+const initialState: UserState = {
+  user: null,
+  error: null,
+};
 
 export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    userLogin: (state, action: PayloadAction<User | null>) => {
-      if (action.payload) {
-        state.user = {
-          _id: action.payload._id || action.payload.id || '',
-          id: action.payload._id || action.payload.id || '',
-          phoneNo: action.payload.phoneNo,
-          name: action.payload.name || 'User',
-          email: action.payload.email,
-          address: action.payload.address,
-          FavouriteProd: action.payload.FavouriteProd || [],
-          isAdmin: action.payload.isAdmin || false
-        };
-      } else {
-        state.user = null;
-      }
+    userLogin: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+      state.error = null;
     },
     userLogout: (state) => {
       state.user = null;
+      state.error = null;
     },
     updateUserDetails: (state, action: PayloadAction<Partial<User>>) => {
-      if (state.user && action.payload) {
+      if (state.user) {
         state.user = { ...state.user, ...action.payload };
       }
+    },
+    setError: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
 });
 
-export const { userLogin, userLogout, updateUserDetails } = userSlice.actions;
+export const { userLogin, userLogout, updateUserDetails, setError, clearError } = userSlice.actions;
 
 export default userSlice.reducer;

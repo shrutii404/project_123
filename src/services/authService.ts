@@ -1,23 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native';
-import apiService from './apiService';
-import { removeUser } from '../utils/user';
-
-const AUTH_TOKEN_KEY = 'authToken';
-const USER_DETAILS_KEY = 'userDetails';
-
-export interface AuthUser {
-  _id: string;
-  id: string;
-  name: string;
-  phoneNo: string;
-  email?: string;
-  token: string;
-}
+import { AUTH_TOKEN_KEY } from '../utils/constants';
 
 class AuthService {
   private static instance: AuthService;
-  private currentUser: AuthUser | null = null;
+  private tokenPromise: Promise<string | null> | null = null;
 
   private constructor() {}
 
@@ -28,111 +14,53 @@ class AuthService {
     return AuthService.instance;
   }
 
-  async initialize(): Promise<AuthUser | null> {
-    try {
-      const [userDetailsStr, token] = await Promise.all([
-        AsyncStorage.getItem(USER_DETAILS_KEY),
-        AsyncStorage.getItem(AUTH_TOKEN_KEY),
-      ]);
-
-      if (userDetailsStr && token) {
-        const userDetails = JSON.parse(userDetailsStr);
-        this.currentUser = { ...userDetails, token };
-        return this.currentUser;
-      }
-    } catch (error) {
-      console.error('Error initializing auth service:', error);
+  /**
+   * Gets the current authentication token, with caching to prevent multiple AsyncStorage reads
+   */
+  async getToken(): Promise<string | null> {
+    if (!this.tokenPromise) {
+      this.tokenPromise = AsyncStorage.getItem(AUTH_TOKEN_KEY);
     }
-    return null;
+    return this.tokenPromise;
   }
 
-  async login(phoneNo: string): Promise<{ success: boolean; error?: string }> {
+  /**
+   * Checks if a valid authentication token exists
+   */
+  async hasToken(): Promise<boolean> {
     try {
-      const response = await apiService.loginUser({ phoneNo });
-      if (response.data) {
-        return { success: true };
-      }
-      return { success: false, error: 'Login failed' };
+      const token = await this.getToken();
+      return !!token;
     } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'An error occurred during login' };
-    }
-  }
-
-  async verifyOTP(
-    phoneNo: string,
-    otp: string
-  ): Promise<{ success: boolean; error?: string; user?: AuthUser }> {
-    try {
-      const response = await apiService.verifyUser({ phoneNo, otp });
-      if (response.data) {
-        const { token, user } = response.data;
-        const authUser: AuthUser = {
-          _id: user.id,
-          id: user.id,
-          name: user.name,
-          phoneNo: user.phoneNo,
-          email: user.email,
-          token,
-        };
-
-        await this.setAuthData(authUser);
-        return { success: true, user: authUser };
-      }
-      return { success: false, error: 'Verification failed' };
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      return { success: false, error: 'An error occurred during verification' };
-    }
-  }
-
-  async logout(): Promise<void> {
-    try {
-      await Promise.all([
-        AsyncStorage.removeItem(AUTH_TOKEN_KEY),
-        AsyncStorage.removeItem(USER_DETAILS_KEY),
-      ]);
-      this.currentUser = null;
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  }
-
-  private async setAuthData(user: AuthUser): Promise<void> {
-    try {
-      await Promise.all([
-        AsyncStorage.setItem(AUTH_TOKEN_KEY, user.token),
-        AsyncStorage.setItem(USER_DETAILS_KEY, JSON.stringify(user)),
-      ]);
-      this.currentUser = user;
-    } catch (error) {
-      console.error('Error saving auth data:', error);
-      throw error;
-    }
-  }
-
-  getCurrentUser(): AuthUser | null {
-    return this.currentUser;
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.currentUser;
-  }
-
-  async requireAuth(navigation: any): Promise<boolean> {
-    if (!this.isAuthenticated()) {
-      Alert.alert(
-        'Login Required',
-        'Please log in to continue',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => navigation.navigate('Login') },
-        ],
-        { cancelable: true }
-      );
+      console.error('Error checking auth token:', error);
       return false;
     }
-    return true;
+  }
+
+  /**
+   * Stores the authentication token
+   */
+  async storeToken(token: string): Promise<void> {
+    try {
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      this.tokenPromise = Promise.resolve(token);
+    } catch (error) {
+      console.error('Error storing auth token:', error);
+      throw new Error('Failed to store authentication token');
+    }
+  }
+
+  /**
+   * Removes the authentication token and clears the cache
+   */
+  async logout(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+      this.tokenPromise = null;
+    } catch (error) {
+      console.error('Error during logout:', error);
+      throw new Error('Failed to complete logout');
+    }
   }
 }
 

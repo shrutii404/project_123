@@ -1,9 +1,4 @@
-import axios, {
-  AxiosInstance,
-  AxiosResponse,
-  AxiosRequestConfig,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiEndpoint } from '../utils/constants';
 
@@ -20,7 +15,6 @@ class ApiService {
       },
     });
 
-    // Request interceptor
     this.api.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
         try {
@@ -37,7 +31,6 @@ class ApiService {
       (error) => Promise.reject(error)
     );
 
-    // Response interceptor
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -57,7 +50,6 @@ class ApiService {
     return ApiService.instance;
   }
 
-  // Auth endpoints
   loginUser(data: { phoneNo: string }): Promise<AxiosResponse> {
     return this.api.post('login', data);
   }
@@ -74,7 +66,6 @@ class ApiService {
     return this.api.post('verifyToken', data);
   }
 
-  // User endpoints
   getUserDetails(userId?: string): Promise<AxiosResponse> {
     const endpoint = userId ? `api/users/${userId}` : 'api/users';
     return this.api.get(endpoint);
@@ -84,7 +75,6 @@ class ApiService {
     return this.api.put(`api/users/${userId}`, data);
   }
 
-  // Product endpoints
   getProducts(id?: string): Promise<AxiosResponse> {
     const endpoint = id ? `api/products/${id}` : 'api/products';
     return this.api.get(endpoint);
@@ -100,12 +90,10 @@ class ApiService {
     return this.api.get(endpoint);
   }
 
-  // Search endpoint
   searchProducts(query: string): Promise<AxiosResponse> {
     return this.api.get(`search?q=${encodeURIComponent(query)}`);
   }
 
-  // Cart endpoints
   addToCart(data: { productId: string; quantity: number }): Promise<AxiosResponse> {
     return this.api.post('api/cart', data);
   }
@@ -118,7 +106,6 @@ class ApiService {
     return this.api.delete(`api/cart/${itemId}`);
   }
 
-  // Order endpoints
   createOrder(data: any): Promise<AxiosResponse> {
     return this.api.post('api/orders', data);
   }
@@ -127,17 +114,14 @@ class ApiService {
     return this.api.get(`/api/orders/${orderId}`);
   }
 
-  // Distance endpoints
   getDistance(data: { sourcePincode: number; destinationPincode: number }): Promise<AxiosResponse> {
     return this.api.post('/api/getDistance/isAvailable', data);
   }
 
-  // Payment endpoints
   phonepePayment(data: { orderId: string; amount: number }): Promise<AxiosResponse> {
     return this.api.post('/api/payment/phonepay', data);
   }
 
-  // Wishlist endpoints
   addToWishlist(userId: string, data: { variationId: string }): Promise<AxiosResponse> {
     return this.api.post(`/api/users/${userId}/wishlist`, data);
   }
@@ -154,7 +138,6 @@ class ApiService {
     return this.api.get(`/api/orderView/${userId}`);
   }
 
-  // Review endpoints
   getReviews(productId: string): Promise<AxiosResponse> {
     return this.api.get(`/api/reviews/${productId}`);
   }

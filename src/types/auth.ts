@@ -2,14 +2,14 @@
  * User interface representing user data throughout the application
  */
 export interface User {
-  _id: string;
-  id?: string; // For backward compatibility
-  phoneNo: string;
+  id: string;
   name?: string;
+  phoneNo: string;
   email?: string;
-  isAdmin?: boolean;
   address?: UserAddress | UserAddress[];
   FavouriteProd?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
@@ -23,7 +23,6 @@ export interface UserAddress {
   country: string;
   postalCode: string;
   city: string;
-  selected?: boolean;
 }
 
 /**
@@ -49,15 +48,7 @@ export interface VerifyOtpRequest {
  */
 export interface LoginResponse {
   token: string;
-  user: {
-    _id: string;
-    name: string;
-    phoneNo: string;
-    isAdmin?: boolean;
-    email?: string;
-    address?: UserAddress | UserAddress[];
-    FavouriteProd?: string[];
-  };
+  user?: User;
 }
 
 /**
@@ -131,5 +122,23 @@ export interface NavigationProps {
  * Login screen props
  */
 export interface LoginScreenProps {
-  navigation: NavigationProps;
+  navigation: {
+    navigate: (screen: string, params?: any) => void;
+    goBack: () => void;
+  };
 }
+
+// Error Types
+export type ApiError = {
+  status?: number;
+  data?: {
+    message?: string;
+    error?: string;
+  };
+  error?: string;
+};
+
+export type AuthError = {
+  code: string;
+  message: string;
+};
