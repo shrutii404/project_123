@@ -1,56 +1,42 @@
 import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
+  Text,
   FlatList,
-  Image,
   StyleSheet,
   Dimensions,
+  Image,
   TouchableOpacity,
-  Text,
+  Animated,
+  ScrollView,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const image1 = require('../assets/FB0.jpg');
-const image2 = require('../assets/FB1.jpg');
-const image3 = require('../assets/FB2.jpg');
-const image4 = require('../assets/FB3.jpg');
-const image5 = require('../assets/FB4.jpg');
-const image6 = require('../assets/p1.jpg');
-const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
+const windowWidth = Dimensions.get('window').width;
 
 const data = [
   {
     id: 1,
     title: 'Image 1',
-    uri: image1,
+    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB4.1f812e5e.jpg&w=750&q=75',
   },
   {
     id: 2,
     title: 'Image 2',
-    uri: image2,
+    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB2.242cd48c.jpg&w=750&q=75',
   },
   {
     id: 3,
     title: 'Image 3',
-    uri: image3,
+    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB3.81169011.jpg&w=750&q=75',
   },
   {
     id: 4,
     title: 'Image 4',
-    uri: image4,
+    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB1.943a9817.jpg&w=750&q=75',
   },
-  // {
-  //   id: 5,
-  //   title: 'Image 5',
-  //   uri: image5,
-  // },
-  // {
-  //   id: 6,
-  //   title: 'Image 6',
-  //   uri: image6,
-  // },
 ];
 
 const reviewdata = [
@@ -91,11 +77,11 @@ const HomeCarousel = ({ type }) => {
 
   useEffect(() => {
     startAutoScroll();
-    return () => stopAutoScroll(); // Clean up the interval on unmount
+    return () => stopAutoScroll();
   }, [activeIndex]);
 
   const startAutoScroll = () => {
-    stopAutoScroll(); // Ensure any existing interval is cleared
+    stopAutoScroll();
     intervalRef.current = setInterval(() => {
       let nextIndex = activeIndex + 1;
       if (nextIndex >= data.length) {
@@ -103,7 +89,7 @@ const HomeCarousel = ({ type }) => {
       }
       flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
       setActiveIndex(nextIndex);
-    }, 3000); // Change slide every 3 seconds
+    }, 3000);
   };
 
   const stopAutoScroll = () => {
@@ -115,8 +101,17 @@ const HomeCarousel = ({ type }) => {
   const handleDotPress = (index) => {
     flatListRef.current.scrollToIndex({ index, animated: true });
     setActiveIndex(index);
-    stopAutoScroll(); // Stop auto-scrolling when manually scrolling
-    startAutoScroll(); // Restart auto-scrolling
+  };
+
+  const handleArrowPress = (direction) => {
+    let newIndex = activeIndex + direction;
+    if (newIndex < 0) {
+      newIndex = data.length - 1;
+    } else if (newIndex >= data.length) {
+      newIndex = 0;
+    }
+    flatListRef.current.scrollToIndex({ index: newIndex, animated: true });
+    setActiveIndex(newIndex);
   };
 
   const handleScroll = (event) => {
@@ -125,24 +120,11 @@ const HomeCarousel = ({ type }) => {
     setActiveIndex(index);
   };
 
-  const handleArrowPress = (direction) => {
-    let nextIndex = activeIndex + direction;
-    if (nextIndex >= data.length) {
-      nextIndex = 0;
-    } else if (nextIndex < 0) {
-      nextIndex = data.length - 1;
-    }
-    flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
-    setActiveIndex(nextIndex);
-    stopAutoScroll(); // Stop auto-scrolling when manually scrolling
-    startAutoScroll(); // Restart auto-scrolling
-  };
-
   const renderItem = ({ item }) => {
     return (
       <View style={styles.itemContainer}>
-        {type === 'herosection' ? (
-          <Image source={item.uri} style={styles.image} />
+        {type == 'herosection' ? (
+          <Image source={{ uri: item.uri }} className="w-full h-full" />
         ) : (
           <View className="w-[90%] h-[200px] p-4 rounded-lg bg-white border border-gray-300 items-center flex-col  justify-center">
             <View>
@@ -201,14 +183,12 @@ const HomeCarousel = ({ type }) => {
       />
       {type == 'herosection' && renderDotIndicator()}
 
-      {/* Left Arrow */}
       {type == 'herosection' && (
         <TouchableOpacity style={styles.leftArrow} onPress={() => handleArrowPress(-1)}>
           <Text style={styles.arrowText}>◀</Text>
         </TouchableOpacity>
       )}
 
-      {/* Right Arrow */}
       {type == 'herosection' && (
         <TouchableOpacity style={styles.rightArrow} onPress={() => handleArrowPress(1)}>
           <Text style={styles.arrowText}>▶</Text>

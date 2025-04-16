@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity} from 'react-native';
-import ReviewItem from './ReviewItem'; // Import the new ReviewItem component
+import { View, Text, TouchableOpacity } from 'react-native';
+import ReviewItem from './ReviewItem';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import ReviewModal from './ReviewModal';
 import { useNavigation } from '@react-navigation/native';
@@ -11,7 +11,6 @@ const ReviewsSection = ({ data, avgRating, allData }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation();
   const user = useSelector((state: RootState) => state.user.user);
-
 
   const handleOpenModal = () => {
     setIsModalVisible(true);
@@ -28,7 +27,7 @@ const ReviewsSection = ({ data, avgRating, allData }) => {
   const handleCloseModal = () => {
     setIsModalVisible(false);
   };
-  // Function to generate stars based on avgRating
+
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating - fullStars >= 0.5;
@@ -61,7 +60,7 @@ const ReviewsSection = ({ data, avgRating, allData }) => {
       <ReviewModal
         isModalVisible={isModalVisible}
         onCloseModal={handleCloseModal}
-        productId={allData.product.id} // Pass the productId to the ReviewModal
+        productId={allData.product.id}
       />
 
       <View className="h-[1px] bg-gray-300 my-4" />
@@ -85,7 +84,6 @@ const ReviewsSection = ({ data, avgRating, allData }) => {
 
       <View className="h-[1px] bg-gray-300 my-4" />
 
-      {/* Render each review dynamically from the data array */}
       {data?.map((review, index) => (
         <ReviewItem
           key={index}

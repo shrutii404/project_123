@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Assuming you are using FontAwesome for stars and close button
+import Icon from 'react-native-vector-icons/FontAwesome';
 import ApiService from '../services/apiService';
-import { getErrorMessage } from '../core/error-handling/errorMessages'; 
+import { getErrorMessage } from '../core/error-handling/errorMessages';
 
 interface ReviewModalProps {
   isModalVisible: boolean;
@@ -12,9 +12,9 @@ interface ReviewModalProps {
 }
 
 const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal, productId }) => {
-  const [rating, setRating] = useState<number>(0); // Initial rating
-  const [comment, setComment] = useState<string>(''); // Initial comment
-  const [loading, setLoading] = useState<boolean>(false); // Add a loading state
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleStarPress = (star: number) => {
     setRating(star);
@@ -68,7 +68,6 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          {/* Close Button */}
           <TouchableOpacity style={styles.closeButton} onPress={onCloseModal}>
             <Icon name="close" size={20} color="#000" />
           </TouchableOpacity>
@@ -78,21 +77,19 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
             Share your experience with us by writing a review.
           </Text>
 
-          {/* Star Rating System */}
           <View style={styles.ratingContainer}>
             {[1, 2, 3, 4, 5].map((star) => (
               <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
                 <Icon
                   name="star"
                   size={30}
-                  color={star <= rating ? '#FFD700' : '#ccc'} // Fill color for selected stars
+                  color={star <= rating ? '#FFD700' : '#ccc'}
                   style={styles.star}
                 />
               </TouchableOpacity>
             ))}
           </View>
 
-          {/* Comment Input */}
           <TextInput
             style={styles.commentInput}
             placeholder="Write your comment"
@@ -101,8 +98,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
             value={comment}
           />
 
-          {/* Submit Review Button */}
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmitReview} disabled={loading}>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmitReview}
+            disabled={loading}
+          >
             <Text style={styles.submitText}>{loading ? 'Submitting...' : 'Submit Review'}</Text>
           </TouchableOpacity>
         </View>
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
     width: '90%',
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     alignItems: 'center',
-    position: 'relative', // Allows positioning for close button
+    position: 'relative',
   },
   closeButton: {
     position: 'absolute',

@@ -10,30 +10,22 @@ import {
   ToastAndroid,
 } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
-// Removed duplicated React Native import block below
-import { Ionicons } from '@expo/vector-icons'; // Correct import for Expo projects
-// Removed direct RTK Query mutation hooks (useLoginUserMutation, useVerifyUserMutation, useResendOTPMutation)
-// Removed FetchBaseQueryError, SerializedError, LoginResponse imports (handled in context)
-// Removed useDispatch, userLogin imports (handled in context)
-// Removed setUser import (no longer exists/needed)
+import { Ionicons } from '@expo/vector-icons';
 import { LoginScreenProps } from '../../types/auth';
-import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import { useAuth } from '../../context/AuthContext';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const { error: apiError, handleError, clearError } = useApiError(); // Keep custom error handling for now
-  const { login, verifyOTP, isLoading: isAuthLoading, error: authError } = useAuth(); // Get functions and loading state from context
+  const { error: apiError, handleError, clearError } = useApiError();
+  const { login, verifyOTP, isLoading: isAuthLoading, error: authError } = useAuth();
   const [phonenumber, setPhonenumber] = useState<string>('');
-  const [verify, setVerify] = useState<boolean>(false); // State to track if OTP view is shown
-  const [resend, setResend] = useState<boolean>(false); // State for resend button visibility
+  const [verify, setVerify] = useState<boolean>(false);
+  const [resend, setResend] = useState<boolean>(false);
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(''));
-  // const [loading, setLoading] = useState<boolean>(false); // Remove local loading, use isAuthLoading
   const inputRefs = useRef<Array<TextInput | null>>([]);
-  const [timer, setTimer] = useState<number>(180); // 180 seconds = 3 minutes
-  const [isSubmitting, setIsSubmitting] = useState(false); // Local state for button loading indicator
-
-  // Removed direct mutation hooks and dispatch
+  const [timer, setTimer] = useState<number>(180);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validatePhoneNumber = (phone: string): boolean => {
     const phoneRegex = /^[6-9]\d{9}$/;
@@ -76,7 +68,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   const handlePhonenumberChange = (inputText: string): void => {
-    // Only allow numbers
     const numbersOnly = inputText.replace(/[^0-9]/g, '');
     setPhonenumber(numbersOnly);
   };
@@ -96,21 +87,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const handleResendOTP = async (): Promise<void> => {
     setIsSubmitting(true);
     try {
-      // Use the login function from useAuth context
       const result = await login(phonenumber);
-      // Check if the mutation was successful (result might not have specific data if just sending OTP)
       if (result.success) {
         setTimer(180);
         setResend(false);
         clearError();
         ToastAndroid.show('OTP resent successfully', ToastAndroid.SHORT);
       } else {
-        // Handle potential errors from the login mutation if needed
-        handleError('NETWORK_ERROR'); // Or use error from result.error
+        handleError('NETWORK_ERROR');
         ToastAndroid.show(result.error || getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
       }
     } catch (error) {
-      // Catch errors if login promise rejects unexpectedly
       handleError('NETWORK_ERROR');
       ToastAndroid.show(getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
     } finally {
@@ -128,25 +115,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
     setIsSubmitting(true);
     try {
-      // Use the verifyOTP function from useAuth context
       const result = await verifyOTP(phonenumber, otpString);
 
       if (result.success) {
         clearError();
         ToastAndroid.show('Login Successful', ToastAndroid.SHORT);
-        // Navigation should happen automatically if AuthGuard is set up correctly,
-        // or you can navigate explicitly after successful verification.
         navigation.navigate('Home');
       } else {
-        // Use the error message provided by verifyOTP
-        handleError('INVALID_CREDENTIALS'); // Keep custom error type if needed
+        handleError('INVALID_CREDENTIALS');
         ToastAndroid.show(
           result.error || getErrorMessage('INVALID_CREDENTIALS'),
           ToastAndroid.SHORT
         );
       }
     } catch (error) {
-      // Catch unexpected errors from verifyOTP promise
       handleError('INVALID_CREDENTIALS');
       ToastAndroid.show(getErrorMessage('INVALID_CREDENTIALS'), ToastAndroid.SHORT);
     } finally {
@@ -156,43 +138,34 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const handleSubmit = async (): Promise<void> => {
     setIsSubmitting(true);
-    clearError(); // Clear previous errors
+    clearError();
 
     try {
       if (!verify) {
-        // If in phone number entry stage
         if (!validatePhoneNumber(phonenumber)) {
           handleError('INVALID_PHONE');
           ToastAndroid.show(getErrorMessage('INVALID_PHONE'), ToastAndroid.SHORT);
           setIsSubmitting(false);
           return;
         }
-        // Use the login function from useAuth context to send OTP
         const result = await login(phonenumber);
         if (result.success) {
-          setVerify(true); // Show OTP input view
-          setTimer(180); // Reset timer
-          setResend(false); // Hide resend initially
+          setVerify(true);
+          setTimer(180);
+          setResend(false);
           ToastAndroid.show('OTP Sent Successfully', ToastAndroid.SHORT);
         } else {
-          // Handle error from login mutation
-          handleError('NETWORK_ERROR'); // Or use error from result.error
+          handleError('NETWORK_ERROR');
           ToastAndroid.show(result.error || getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
         }
       } else {
-        // If in OTP verification stage
         await handleVerifyOTP();
       }
     } catch (error) {
-      // Catch unexpected errors
       console.error('Submit error:', error);
       Alert.alert('Error', 'An unexpected error occurred during submission.');
-      handleError('GENERIC_ERROR'); // Set a generic error state
+      handleError('GENERIC_ERROR');
     } finally {
-      // Only set isSubmitting false if not navigating away on success
-      // Since handleVerifyOTP might navigate, this might cause a state update on unmounted component
-      // Consider handling navigation state more carefully if issues arise.
-      // For now, let's set it here.
       setIsSubmitting(false);
     }
   };
@@ -236,7 +209,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                         fontWeight: '500',
                         borderTopLeftRadius: index === 0 || index === 3 ? 10 : 0,
                         color: 'black',
-
                         borderBottomLeftRadius: index === 2 || index === 5 ? 10 : 0,
                         borderBottomRightRadius: index === 2 || index === 5 ? 10 : 0,
                       }}
@@ -246,7 +218,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                       keyboardType="numeric"
                       ref={(ref) => (inputRefs.current[index] = ref)}
                     />
-                    {/* Add hyphen after the 3rd input box */}
                     {index === 2 && <Text className="text-xl mx-1 text-black">-</Text>}
                   </React.Fragment>
                 ))}
@@ -265,8 +236,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           {resend && (
             <TouchableOpacity
               className=" border border-gray-400 mt-2 w-full p-3 items-center rounded-md "
-              onPress={handleResendOTP} // Use dedicated resend handler
-              disabled={isSubmitting || isAuthLoading} // Disable while submitting/loading
+              onPress={handleResendOTP}
+              disabled={isSubmitting || isAuthLoading}
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#000" />
@@ -277,10 +248,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           )}
           <TouchableOpacity
             className="bg-black mt-2 w-full p-3 items-center rounded-md "
-            onPress={handleSubmit} // Main submit handler
-            disabled={isSubmitting || isAuthLoading} // Disable while submitting/loading
+            onPress={handleSubmit}
+            disabled={isSubmitting || isAuthLoading}
           >
-            {isSubmitting ? ( // Use local isSubmitting for button indicator
+            {isSubmitting ? (
               <ActivityIndicator color="#fff" />
             ) : verify ? (
               <Text className="text-white ">Verify</Text>
