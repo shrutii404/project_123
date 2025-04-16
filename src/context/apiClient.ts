@@ -1,6 +1,6 @@
 // apiClient.ts
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiEndpoint } from '../utils/constants';
 
 // Base URL for the API
@@ -13,11 +13,14 @@ const apiClient = axios.create({
 
 // Axios request interceptor to attach the token to every request
 apiClient.interceptors.request.use(
-  (config) => {
-    const token = Cookies.get('auth_token');
-    if (token) {
-      console.log(token);
-      config.headers['x-auth-token'] = token;
+  async (config) => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      if (token) {
+        config.headers['x-auth-token'] = token;
+      }
+    } catch (error) {
+      console.error('Error reading token from AsyncStorage:', error);
     }
     return config;
   },

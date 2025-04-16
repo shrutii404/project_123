@@ -2,9 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import CloseIcon from '../../icons/CloseIcon';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
-import { clearCart, removeProduct } from '../../store/slices/cartSlice';
-import { RootState } from '../../store';
+import { useCart } from '../../context/CartContext';
 
 interface CartItem {
   id: string;
@@ -26,11 +24,12 @@ const EmptyCart = () => {
 };
 
 const Product = ({ data, key }: { data: CartItem; key: string }) => {
-  const dispatch = useDispatch();
+  const { removeFromCart } = useCart();
 
-  const handleRemove = (id: string) => {
-    dispatch(removeProduct(id));
+  const handleRemove = (productId: number) => {
+    removeFromCart(productId);
   };
+
   return (
     <View key={key}>
       <View className="flex-row">
@@ -45,8 +44,8 @@ const Product = ({ data, key }: { data: CartItem; key: string }) => {
             <Text className="text-sm text-black">{data?.name}</Text>
           </TouchableOpacity>
 
-          <View className="flex  flex-row justify-between text-sm">
-            <View className="flex gap-1  flex-row">
+          <View className="flex flex-row justify-between text-sm">
+            <View className="flex gap-1 flex-row">
               <Text className="text-xs text-[#9d9ea2]">{data?.quantity} x</Text>
               <Text className="font-semibold text-black">₹{data?.price}</Text>
               <Text className="text-[#0174be]">/piece</Text>
@@ -64,14 +63,17 @@ const Product = ({ data, key }: { data: CartItem; key: string }) => {
 };
 
 const CartItems = ({ items }: { items: CartItem[] }) => {
-  const dispatch = useDispatch();
   const navigation = useNavigation();
+  const { clearCart } = useCart();
+
   const handleClearCart = () => {
-    dispatch(clearCart());
+    clearCart();
   };
+
   const handleCheckout = () => {
     navigation.navigate('Shopcart' as never);
   };
+
   return (
     <View className="w-full">
       {items &&
@@ -94,25 +96,30 @@ const CartItems = ({ items }: { items: CartItem[] }) => {
     </View>
   );
 };
+
 const CartScreen = () => {
   const navigation = useNavigation();
-  const items = useSelector((state: RootState) => state.cart.items);
+  const { cart } = useCart();
 
   const handleClose = () => {
     navigation.goBack();
   };
+
   return (
     <View className="p-5 bg-white flex-1 items-center">
       <View className="flex-row justify-between mt-3 items-center w-full ">
         <Text className="text-xl font-[500] w-fit text-[#212529]">
-          Your Cart <Text className="text-base text-[#9d9ea2]">({items?.reduce((total: number, item: CartItem) => total + (item.quantity || 0), 0)})</Text>
+          Your Cart{' '}
+          <Text className="text-base text-[#9d9ea2]">
+            ({cart.reduce((total: number, item: CartItem) => total + (item.quantity || 0), 0)})
+          </Text>
         </Text>
         <TouchableOpacity className="border rounded border-[#6c757d]" onPress={handleClose}>
           <CloseIcon />
         </TouchableOpacity>
       </View>
       <View className="shrink-0 bg-[#dee2e6] h-[1px] my-4 w-full"></View>
-      {items && items.length > 0 ? <CartItems items={items} /> : <EmptyCart />}
+      {cart && cart.length > 0 ? <CartItems items={cart} /> : <EmptyCart />}
     </View>
   );
 };

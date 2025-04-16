@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -8,13 +8,14 @@ import React, {
   useCallback,
   useMemo,
   useEffect,
-} from "react";
-import axios from "axios";
-import apiClient from "./apiClient";
+} from 'react';
+import axios from 'axios';
+import apiClient from './apiClient';
+import { apiEndpoint } from '../utils/constants';
 
 // API endpoint
 
-const api = `${process.env.NEXT_PUBLIC_API_URL}/api/product-variations`;
+const api = apiEndpoint;
 
 export type Review = {
   id: number;
@@ -70,15 +71,15 @@ type ProductVariationStateType = {
 
 // Define action types
 type ProductVariationAction =
-  | { type: "FETCH_PRODUCT_VARIATIONS_REQUEST" }
-  | { type: "FETCH_PRODUCT_VARIATIONS_SUCCESS"; payload: ProductVariation[] }
-  | { type: "FETCH_PRODUCT_VARIATIONS_FAILURE"; payload: string }
+  | { type: 'FETCH_PRODUCT_VARIATIONS_REQUEST' }
+  | { type: 'FETCH_PRODUCT_VARIATIONS_SUCCESS'; payload: ProductVariation[] }
+  | { type: 'FETCH_PRODUCT_VARIATIONS_FAILURE'; payload: string }
   | {
-      type: "FETCH_SINGLE_PRODUCT_VARIATION_SUCCESS";
+      type: 'FETCH_SINGLE_PRODUCT_VARIATION_SUCCESS';
       payload: ProductVariation;
     }
   | {
-      type: "FETCH_PRODUCT_VARIATIONS_BY_QUERY_SUCCESS";
+      type: 'FETCH_PRODUCT_VARIATIONS_BY_QUERY_SUCCESS';
       payload: ProductVariation[];
     };
 
@@ -97,11 +98,7 @@ const ProductVariationContext = createContext<{
   dispatch: React.Dispatch<ProductVariationAction>;
   getAllProductVariations: () => void;
   getSingleProductVariation: (id: number) => void;
-  getProductVariationsByQuery: (filters: {
-    key: string;
-    value: string;
-    category: string;
-  }) => void;
+  getProductVariationsByQuery: (filters: { key: string; value: string; category: string }) => void;
 }>({
   state: initialState,
   dispatch: () => null,
@@ -116,31 +113,31 @@ const reducer = (
   action: ProductVariationAction
 ): ProductVariationStateType => {
   switch (action.type) {
-    case "FETCH_PRODUCT_VARIATIONS_REQUEST":
+    case 'FETCH_PRODUCT_VARIATIONS_REQUEST':
       return {
         ...state,
         loading: true,
         error: null,
       };
-    case "FETCH_PRODUCT_VARIATIONS_SUCCESS":
+    case 'FETCH_PRODUCT_VARIATIONS_SUCCESS':
       return {
         ...state,
         loading: false,
         productVariations: action.payload,
       };
-    case "FETCH_PRODUCT_VARIATIONS_BY_QUERY_SUCCESS":
+    case 'FETCH_PRODUCT_VARIATIONS_BY_QUERY_SUCCESS':
       return {
         ...state,
         loading: false,
         queriedProductVariations: action.payload,
       };
-    case "FETCH_PRODUCT_VARIATIONS_FAILURE":
+    case 'FETCH_PRODUCT_VARIATIONS_FAILURE':
       return {
         ...state,
         loading: false,
         error: action.payload,
       };
-    case "FETCH_SINGLE_PRODUCT_VARIATION_SUCCESS":
+    case 'FETCH_SINGLE_PRODUCT_VARIATION_SUCCESS':
       return {
         ...state,
         loading: false,
@@ -152,44 +149,40 @@ const reducer = (
 };
 
 // ProductVariationProvider Component
-export const ProductVariationProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const ProductVariationProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const getAllProductVariations = useCallback(async () => {
-    dispatch({ type: "FETCH_PRODUCT_VARIATIONS_REQUEST" });
+    dispatch({ type: 'FETCH_PRODUCT_VARIATIONS_REQUEST' });
     try {
       const response = await apiClient.get<ProductVariation[]>(api);
       const productVariations = response.data;
       dispatch({
-        type: "FETCH_PRODUCT_VARIATIONS_SUCCESS",
+        type: 'FETCH_PRODUCT_VARIATIONS_SUCCESS',
         payload: productVariations,
       });
     } catch (error: any) {
       dispatch({
-        type: "FETCH_PRODUCT_VARIATIONS_FAILURE",
+        type: 'FETCH_PRODUCT_VARIATIONS_FAILURE',
         payload: error.message,
       });
     }
   }, []);
 
   const getSingleProductVariation = useCallback(async (id: number) => {
-    dispatch({ type: "FETCH_PRODUCT_VARIATIONS_REQUEST" });
+    dispatch({ type: 'FETCH_PRODUCT_VARIATIONS_REQUEST' });
     try {
       console.log(id);
       const response = await apiClient.get<ProductVariation>(`${api}/${id}`);
       const productVariation = response.data;
       console.log(productVariation);
       dispatch({
-        type: "FETCH_SINGLE_PRODUCT_VARIATION_SUCCESS",
+        type: 'FETCH_SINGLE_PRODUCT_VARIATION_SUCCESS',
         payload: productVariation,
       });
     } catch (error: any) {
       dispatch({
-        type: "FETCH_PRODUCT_VARIATIONS_FAILURE",
+        type: 'FETCH_PRODUCT_VARIATIONS_FAILURE',
         payload: error.message,
       });
     }
@@ -197,41 +190,30 @@ export const ProductVariationProvider = ({
 
   const getProductVariationsByQuery = useCallback(
     async (filters: { key: string; value: string; category: string }) => {
-      dispatch({ type: "FETCH_PRODUCT_VARIATIONS_REQUEST" });
+      dispatch({ type: 'FETCH_PRODUCT_VARIATIONS_REQUEST' });
       try {
         // Create a filter object with a dynamic key
         const queryParams = new URLSearchParams();
         queryParams.append(filters.key, filters.value);
-        queryParams.append("category", filters.category);
+        queryParams.append('category', filters.category);
 
         const queryString = queryParams.toString();
-        console.log(
-          "ProductVariation Context getProductVariationsByQuery",
-          queryString
-        );
+        console.log('ProductVariation Context getProductVariationsByQuery', queryString);
 
-        const response = await apiClient.get<ProductVariation[]>(
-          `${api}?${queryString}`
-        );
+        const response = await apiClient.get<ProductVariation[]>(`${api}?${queryString}`);
 
         const productVariations = response.data;
-        console.log(
-          "ProductVariation Context getProductVariationsByQuery",
-          productVariations
-        );
+        console.log('ProductVariation Context getProductVariationsByQuery', productVariations);
 
         dispatch({
-          type: "FETCH_PRODUCT_VARIATIONS_BY_QUERY_SUCCESS",
+          type: 'FETCH_PRODUCT_VARIATIONS_BY_QUERY_SUCCESS',
           payload: productVariations,
         });
       } catch (error: any) {
-        console.error(
-          "Error fetching product variations:",
-          error.message || error
-        );
+        console.error('Error fetching product variations:', error.message || error);
         dispatch({
-          type: "FETCH_PRODUCT_VARIATIONS_FAILURE",
-          payload: error.message || "An unknown error occurred.",
+          type: 'FETCH_PRODUCT_VARIATIONS_FAILURE',
+          payload: error.message || 'An unknown error occurred.',
         });
       }
     },
@@ -246,12 +228,7 @@ export const ProductVariationProvider = ({
       getSingleProductVariation,
       getProductVariationsByQuery,
     }),
-    [
-      state,
-      getAllProductVariations,
-      getSingleProductVariation,
-      getProductVariationsByQuery,
-    ]
+    [state, getAllProductVariations, getSingleProductVariation, getProductVariationsByQuery]
   );
 
   useEffect(() => {
@@ -269,9 +246,7 @@ export const ProductVariationProvider = ({
 export const useProductVariations = () => {
   const context = useContext(ProductVariationContext);
   if (!context) {
-    throw new Error(
-      "useProductVariations must be used within a ProductVariationProvider"
-    );
+    throw new Error('useProductVariations must be used within a ProductVariationProvider');
   }
   return context;
 };

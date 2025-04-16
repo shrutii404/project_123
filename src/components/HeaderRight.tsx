@@ -6,13 +6,11 @@ import SearchIcon from '../icons/SearchIcon';
 import CartIcon from '../icons/CartIcon';
 import FaviroteIcon from '../icons/FaviroteIcon';
 import { FontAwesome, Ionicons } from '@expo/vector-icons'; // Correct import for Expo
-import { useDispatch, useSelector } from 'react-redux';
 import UserCheckedIcon from '../icons/UserCheckedIcons';
-// import { userSlice } from '../store/slices/userSlice'; // userLogout action dispatched via useAuth
 import { useSearchBox } from '../context/SearchContext';
-// import { removeUser } from '../utils/user'; // Removed
 import { RootState } from '../store';
 import { useAuth } from '../context/AuthContext'; // Import useAuth
+import { useCart } from '../context/CartContext';
 
 interface HeaderRightProps {
   navigation: {
@@ -29,10 +27,8 @@ interface CartItem {
 const HeaderRight = ({ navigation }: HeaderRightProps) => {
   const { showModal, hideModal } = useModal();
   const { toggleSearchBar } = useSearchBox();
-  const { logout } = useAuth(); // Get logout function from context
-  const cartitems = useSelector((state: RootState) => state.cart.items); // Type inferred from RootState
-  const userDetails = useSelector((state: RootState) => state.user.user); // Type inferred from RootState
-  // const dispatch = useDispatch(); // No longer needed directly for logout
+  const { logout, userDetails } = useAuth(); // Get logout function from context
+  const { cart } = useCart();
 
   const openUserModal = () => {
     showModal(
@@ -83,10 +79,10 @@ const HeaderRight = ({ navigation }: HeaderRightProps) => {
         <SearchIcon />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Cart')} className="relative">
-        {cartitems && cartitems.length > 0 && (
+        {cart && cart.length > 0 && (
           <View className="absolute -top-1 right-1 bg-red-500 h-5 w-5 rounded-full z-20 items-center justify-center">
             <Text className="text-[10px]">
-              {cartitems.reduce((total: number, item: CartItem) => total + (item.quantity || 0), 0)}
+              {cart.reduce((total: number, item: CartItem) => total + (item.quantity || 0), 0)}
             </Text>
           </View>
         )}

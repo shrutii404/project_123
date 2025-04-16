@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, {
   createContext,
   useReducer,
@@ -7,18 +7,12 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
-} from "react";
-import axios from "axios";
-import apiClient from "./apiClient";
+} from 'react';
+import axios from 'axios';
+import apiClient from './apiClient';
+import { apiEndpoint } from '../utils/constants';
 
-
-
-
- const api = `${process.env.NEXT_PUBLIC_API_URL}/api/categories`;
-
-
-
-
+const api = apiEndpoint;
 
 export type Category = {
   categoryDiscount: number | null;
@@ -33,7 +27,6 @@ export type Category = {
   parent?: Category;
   children: Category[];
   products: Product[];
-  
 };
 
 type Product = {
@@ -62,10 +55,10 @@ type CategoryStateType = {
 
 // Define action types
 type CategoryAction =
-  | { type: "FETCH_CATEGORIES_REQUEST" }
-  | { type: "FETCH_CATEGORIES_SUCCESS"; payload: Category[] }
-  | { type: "FETCH_CATEGORIES_FAILURE"; payload: string }
-  | { type: "FETCH_SINGLE_CATEGORY_SUCCESS"; payload: Category };
+  | { type: 'FETCH_CATEGORIES_REQUEST' }
+  | { type: 'FETCH_CATEGORIES_SUCCESS'; payload: Category[] }
+  | { type: 'FETCH_CATEGORIES_FAILURE'; payload: string }
+  | { type: 'FETCH_SINGLE_CATEGORY_SUCCESS'; payload: Category };
 
 // Create initial state
 const initialState: CategoryStateType = {
@@ -89,30 +82,27 @@ const CategoryContext = createContext<{
 });
 
 // Reducer function to update state based on actions
-const reducer = (
-  state: CategoryStateType,
-  action: CategoryAction
-): CategoryStateType => {
+const reducer = (state: CategoryStateType, action: CategoryAction): CategoryStateType => {
   switch (action.type) {
-    case "FETCH_CATEGORIES_REQUEST":
+    case 'FETCH_CATEGORIES_REQUEST':
       return {
         ...state,
         loading: true,
         error: null,
       };
-    case "FETCH_CATEGORIES_SUCCESS":
+    case 'FETCH_CATEGORIES_SUCCESS':
       return {
         ...state,
         loading: false,
         categories: action.payload,
       };
-    case "FETCH_CATEGORIES_FAILURE":
+    case 'FETCH_CATEGORIES_FAILURE':
       return {
         ...state,
         loading: false,
         error: action.payload,
       };
-    case "FETCH_SINGLE_CATEGORY_SUCCESS":
+    case 'FETCH_SINGLE_CATEGORY_SUCCESS':
       return {
         ...state,
         loading: false,
@@ -128,24 +118,24 @@ export const CategoryProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const getAllCategories = useCallback(async () => {
-    dispatch({ type: "FETCH_CATEGORIES_REQUEST" });
+    dispatch({ type: 'FETCH_CATEGORIES_REQUEST' });
     try {
       const response = await apiClient.get<Category[]>(`${api}`);
       const categories = response.data; // Extract data from AxiosResponse
-      dispatch({ type: "FETCH_CATEGORIES_SUCCESS", payload: categories });
+      dispatch({ type: 'FETCH_CATEGORIES_SUCCESS', payload: categories });
     } catch (error: any) {
-      dispatch({ type: "FETCH_CATEGORIES_FAILURE", payload: error.message });
+      dispatch({ type: 'FETCH_CATEGORIES_FAILURE', payload: error.message });
     }
   }, []);
 
   const getSingleCategory = useCallback(async (id: number) => {
-    dispatch({ type: "FETCH_CATEGORIES_REQUEST" });
+    dispatch({ type: 'FETCH_CATEGORIES_REQUEST' });
     try {
       const response = await apiClient.get<Category>(`${api}/${id}`);
       const category = response.data;
-      dispatch({ type: "FETCH_SINGLE_CATEGORY_SUCCESS", payload: category });
+      dispatch({ type: 'FETCH_SINGLE_CATEGORY_SUCCESS', payload: category });
     } catch (error: any) {
-      dispatch({ type: "FETCH_CATEGORIES_FAILURE", payload: error.message });
+      dispatch({ type: 'FETCH_CATEGORIES_FAILURE', payload: error.message });
     }
   }, []);
 
@@ -164,18 +154,14 @@ export const CategoryProvider = ({ children }: { children: ReactNode }) => {
     getAllCategories();
   }, [getAllCategories]);
 
-  return (
-    <CategoryContext.Provider value={contextValue}>
-      {children}
-    </CategoryContext.Provider>
-  );
+  return <CategoryContext.Provider value={contextValue}>{children}</CategoryContext.Provider>;
 };
 
 // Custom Hook to use CategoryContext
 export const useCategory = () => {
   const context = useContext(CategoryContext);
   if (!context) {
-    throw new Error("useCategory must be used within a CategoryProvider");
+    throw new Error('useCategory must be used within a CategoryProvider');
   }
   return context;
 };

@@ -1,19 +1,10 @@
-"use client";
-import {
-  ReactNode,
-  createContext,
-  useReducer,
-  useContext,
-  useCallback,
-  useMemo,
-} from "react";
-import axios from "axios";
-import apiClient from "./apiClient";
+'use client';
+import { ReactNode, createContext, useReducer, useContext, useCallback, useMemo } from 'react';
+import axios from 'axios';
+import apiClient from './apiClient';
+import { apiEndpoint } from '../utils/constants';
 
-
-
- const api = `${process.env.NEXT_PUBLIC_API_URL}/api`;
-
+const api = apiEndpoint;
 
 // Define your Product type
 type Product = {
@@ -42,10 +33,10 @@ type ProductStateType = {
 
 // Define action types
 type ProductAction =
-  | { type: "FETCH_PRODUCTS_REQUEST" }
-  | { type: "FETCH_PRODUCTS_SUCCESS"; payload: Product[] }
-  | { type: "FETCH_PRODUCTS_FAILURE"; payload: string }
-  | { type: "FETCH_SINGLE_PRODUCT_SUCCESS"; payload: Product };
+  | { type: 'FETCH_PRODUCTS_REQUEST' }
+  | { type: 'FETCH_PRODUCTS_SUCCESS'; payload: Product[] }
+  | { type: 'FETCH_PRODUCTS_FAILURE'; payload: string }
+  | { type: 'FETCH_SINGLE_PRODUCT_SUCCESS'; payload: Product };
 
 // Create initial state
 const initialState: ProductStateType = {
@@ -69,30 +60,27 @@ const ProductContext = createContext<{
 });
 
 // Reducer function to update state based on actions
-const reducer = (
-  state: ProductStateType,
-  action: ProductAction
-): ProductStateType => {
+const reducer = (state: ProductStateType, action: ProductAction): ProductStateType => {
   switch (action.type) {
-    case "FETCH_PRODUCTS_REQUEST":
+    case 'FETCH_PRODUCTS_REQUEST':
       return {
         ...state,
         loading: true,
         error: null,
       };
-    case "FETCH_PRODUCTS_SUCCESS":
+    case 'FETCH_PRODUCTS_SUCCESS':
       return {
         ...state,
         loading: false,
         products: action.payload,
       };
-    case "FETCH_PRODUCTS_FAILURE":
+    case 'FETCH_PRODUCTS_FAILURE':
       return {
         ...state,
         loading: false,
         error: action.payload,
       };
-    case "FETCH_SINGLE_PRODUCT_SUCCESS":
+    case 'FETCH_SINGLE_PRODUCT_SUCCESS':
       return {
         ...state,
         loading: false,
@@ -107,27 +95,27 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const getAllProducts = useCallback(async () => {
-    dispatch({ type: "FETCH_PRODUCTS_REQUEST" });
+    dispatch({ type: 'FETCH_PRODUCTS_REQUEST' });
     try {
       const response = await apiClient.get<Product[]>(`${api}/products`);
       const products = response.data; // Extract data from AxiosResponse
 
-      dispatch({ type: "FETCH_PRODUCTS_SUCCESS", payload: products });
+      dispatch({ type: 'FETCH_PRODUCTS_SUCCESS', payload: products });
     } catch (error: any) {
-      dispatch({ type: "FETCH_PRODUCTS_FAILURE", payload: error.message });
+      dispatch({ type: 'FETCH_PRODUCTS_FAILURE', payload: error.message });
     }
   }, []);
 
   const getSingleProduct = useCallback(async (productId: number) => {
-    dispatch({ type: "FETCH_PRODUCTS_REQUEST" });
+    dispatch({ type: 'FETCH_PRODUCTS_REQUEST' });
     try {
       const response = await apiClient.get<Product>(`${api}/products/${productId}`);
       const product = response.data;
-      console.log(product)
+      console.log(product);
 
-      dispatch({ type: "FETCH_SINGLE_PRODUCT_SUCCESS", payload: product });
+      dispatch({ type: 'FETCH_SINGLE_PRODUCT_SUCCESS', payload: product });
     } catch (error: any) {
-      dispatch({ type: "FETCH_PRODUCTS_FAILURE", payload: error.message });
+      dispatch({ type: 'FETCH_PRODUCTS_FAILURE', payload: error.message });
     }
   }, []);
 
@@ -142,17 +130,13 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     [state, dispatch, getAllProducts, getSingleProduct]
   );
 
-  return (
-    <ProductContext.Provider value={contextValue}>
-      {children}
-    </ProductContext.Provider>
-  );
+  return <ProductContext.Provider value={contextValue}>{children}</ProductContext.Provider>;
 };
 
 export const useProducts = () => {
   const context = useContext(ProductContext);
   if (!context) {
-    throw new Error("useProducts must be used within a ProductProvider");
+    throw new Error('useProducts must be used within a ProductProvider');
   }
   return context;
 };

@@ -1,25 +1,11 @@
 import { View, Text, FlatList } from 'react-native';
 import React from 'react';
 import CheckoutCartCard from './CheckoutCartCard';
-import { useDispatch, useSelector } from 'react-redux';
-import { decrementQuantity, incrementQuantity, removeProduct } from '../store/slices/cartSlice';
+import { useCart } from '../context/CartContext';
 
 const CheckoutCart = () => {
-  const cart = useSelector((state) => state.cart.items);
+  const { cart, removeFromCart, increment, decrement } = useCart();
 
-  const dispatch = useDispatch();
-
-  const removeFromCart = (productId: string) => {
-    dispatch(removeProduct(productId));
-  };
-
-  const increment = (productId: string) => {
-    dispatch(incrementQuantity(productId));
-  };
-
-  const decrement = (productId: string) => {
-    dispatch(decrementQuantity(productId));
-  };
   return (
     <View className="flex flex-col gap-4 w-[90%] mt-4">
       <View className="flex flex-row justify-between items-center border-b border-gray-200 pb-4">
@@ -28,7 +14,7 @@ const CheckoutCart = () => {
       </View>
       <FlatList
         data={cart}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.productId.toString()}
         renderItem={({ item }) => (
           <CheckoutCartCard
             {...item}

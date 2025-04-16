@@ -1,4 +1,12 @@
-import { View, Text, ScrollView, Pressable, TouchableOpacity, TextInput, Image } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  TouchableOpacity,
+  TextInput,
+  Image,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -13,6 +21,7 @@ import { addProduct } from '../../store/slices/cartSlice';
 import { apiEndpoint } from '../../utils/constants';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
+import { useCart } from '../../context/CartContext';
 
 const ProductDetailsScreen = ({ route }) => {
   const [quantity, setQuantity] = useState(1);
@@ -24,6 +33,7 @@ const ProductDetailsScreen = ({ route }) => {
   const { searchVisible } = useSearchBox();
   const dispatch = useDispatch();
   const { error: apiError, handleError, clearError } = useApiError();
+  const { addToCart } = useCart();
 
   const handleQuantity = (type) => {
     if (type == 'increment') {
@@ -76,15 +86,26 @@ const ProductDetailsScreen = ({ route }) => {
   };
 
   const handleAddToCart = () => {
-    dispatch(addProduct({ ...productData, quantity }));
+    const productToAdd = {
+      productId: data.id,
+      name: data.name,
+      price: productData.price,
+      discountPrice: productData.discountPrice,
+      quantity: quantity,
+      images: data.images,
+      attributes: {
+        size: data.size,
+        color: data.color,
+        // Add any other attributes your product has
+      },
+    };
+    addToCart(productToAdd, quantity);
   };
 
   if (apiError) {
     return (
       <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-red-500 text-center mb-2">
-          {getErrorMessage(apiError)}
-        </Text>
+        <Text className="text-red-500 text-center mb-2">{getErrorMessage(apiError)}</Text>
         <TouchableOpacity
           className="bg-blue-500 px-4 py-2 rounded"
           onPress={() => {
@@ -251,10 +272,10 @@ const ProductDetailsScreen = ({ route }) => {
 
                     <Text className="text-gray-400 font-medium ml-2 ">
                       <Text className="text-black font-semibold">Payment Methods</Text>
-                      :We accept both COD and UPI payment options. In case of COD, 25% of the
-                      amount has to be paid in advance via UPI or Bank Transfers. The remaining
-                      75% could be paid on delivery. We also provide a 2% discount to customers
-                      who pay in full in advance through UPI.
+                      :We accept both COD and UPI payment options. In case of COD, 25% of the amount
+                      has to be paid in advance via UPI or Bank Transfers. The remaining 75% could
+                      be paid on delivery. We also provide a 2% discount to customers who pay in
+                      full in advance through UPI.
                     </Text>
                   </View>
                   <View className="flex-row items-start">
@@ -271,8 +292,8 @@ const ProductDetailsScreen = ({ route }) => {
 
                     <Text className="text-gray-400 font-medium ml-2 ">
                       <Text className="text-black font-semibold">Payment Confirmation</Text>
-                      :We’d ask you to send a screenshot of the UPI payment via WhatsApp to
-                      confirm your payment.
+                      :We’d ask you to send a screenshot of the UPI payment via WhatsApp to confirm
+                      your payment.
                     </Text>
                   </View>
                   <View className="flex-row items-start">
@@ -307,11 +328,7 @@ const ProductDetailsScreen = ({ route }) => {
             </View>
 
             {productData && productData?.Review && (
-              <ReviewsSection
-                data={productData.Review}
-                allData={productData}
-                avgRating={rating}
-              />
+              <ReviewsSection data={productData.Review} allData={productData} avgRating={rating} />
             )}
           </View>
         </View>

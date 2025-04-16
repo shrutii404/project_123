@@ -1,14 +1,14 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, Image } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useCart } from '../context/CartContext';
 
 const CartPriceCard = () => {
   const navigation = useNavigation();
-  const cart = useSelector((state) => state.cart.items);
+  const { cart } = useCart();
 
   const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const savedPrice = cart.reduce((a, b) => a + (b.price - b.discountPrice), 0);
+  const savedPrice = cart.reduce((a, b) => a + (b.price - b.discountPrice) * b.quantity, 0);
   const [availability, setAvailability] = useState<number>(0);
   const [pincode, setPincode] = useState<string>('');
 
@@ -22,14 +22,13 @@ const CartPriceCard = () => {
       Alert.alert('Please enter a valid 6-digit Indian pincode.');
       return;
     }
-    // Simulate availability check
-    setAvailability(1); // Assume available for demo
+    setAvailability(1);
   };
 
   return (
     <View className="flex flex-col gap-2">
-      <View className="flex flex-col ">
-        <Text className="font-semibold text-base text-black">PRICE DETAILS (1)</Text>
+      <View className="flex flex-col">
+        <Text className="font-semibold text-base text-black">PRICE DETAILS ({cart.length})</Text>
 
         <View className="flex-row justify-between items-center mt-2">
           <Text className="text-sm font-normal text-black">Price</Text>
@@ -43,20 +42,6 @@ const CartPriceCard = () => {
           <Text className="text-sm font-normal text-black">Shipping Charges</Text>
           <Text className="font-semibold text-sm text-black">₹ 0.00</Text>
         </View>
-
-        {/* <View className="flex gap-2">
-          <TextInput
-            className="w-full border rounded-md px-2 py-1 text-sm text-black"
-            placeholder="Enter Pin Code"
-            value={pincode}
-            onChangeText={setPincode}
-          />
-          <TouchableOpacity
-            className="bg-[#c7c8ca] text-black hover:bg-[#a0a0a0] px-4 py-2 rounded"
-            onPress={checkAvailability}>
-            <Text className="text-black">Enter Pin Code</Text>
-          </TouchableOpacity>
-        </View> */}
 
         {availability > 0 && (
           <View
@@ -73,14 +58,14 @@ const CartPriceCard = () => {
         )}
       </View>
 
-      <View className="flex flex-col ">
+      <View className="flex flex-col">
         <View className="flex-row justify-between items-center mt-2">
           <Text className="text-sm font-semibold text-black">Total (inclusive of all taxes):</Text>
           <Text className="font-semibold text-sm text-black">₹ {totalPrice.toFixed(2)}</Text>
         </View>
         <View className="flex-row justify-between items-center mt-2">
           <Text className="text-sm font-normal text-gray-500">You Save</Text>
-          <Text className="font-semibold text-sm text-gray-500">₹ 0.00</Text>
+          <Text className="font-semibold text-sm text-gray-500">₹ {savedPrice.toFixed(2)}</Text>
         </View>
 
         <TouchableOpacity
@@ -98,7 +83,7 @@ const CartPriceCard = () => {
             source={{
               uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FPhonePe.5c8ff022.png&w=3840&q=75',
             }}
-            className="h-10 w-20 bg-white rounded-lg  "
+            className="h-10 w-20 bg-white rounded-lg"
           />
         </View>
       </View>

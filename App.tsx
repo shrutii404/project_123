@@ -9,7 +9,6 @@ import LoginScreen from './src/screens/Auth/LoginScreen';
 
 import MenuIcon from './src/icons/MenuIcon';
 import { Provider } from 'react-redux';
-import store from './src/store';
 import { ModalProvider } from './src/context/ModalContext';
 import HeaderRight from './src/components/HeaderRight';
 import ProductsScreen from './src/screens/ProductDetails/ProductsScreen.jsx';
@@ -31,12 +30,18 @@ import RefundPolicy from './src/screens/RefundPolicy/RefundPolicy';
 import AboutScreen from './src/screens/AboutScreen/AboutScreen';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { CartProvider } from './src/context/CartContext';
+import { WishlistProvider } from './src/context/WishlistContext';
+import { ProductProvider } from './src/context/ProductContext';
+import { ProductVariationProvider } from './src/context/ProductVariation';
+import { CategoryProvider } from './src/context/CategoryContext';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 function HomeStack() {
-  const { user } = useAuth();
+  const { state} = useAuth();
+  const user = state.user;
 
   return (
     <Stack.Navigator initialRouteName="Home">
@@ -227,95 +232,105 @@ function App(): React.JSX.Element {
         <AuthProvider>
           <ModalProvider>
             <SearchProvider>
-              <NavigationContainer>
-                <Drawer.Navigator
-                  initialRouteName="HomeStack"
-                  screenOptions={{
-                    drawerStyle: {
-                      backgroundColor: '#f4f4f4', // Light background
-                      width: 240, // Drawer width
-                    },
-                    drawerActiveTintColor: '#6200EE', // Active item color
-                    drawerInactiveTintColor: '#555', // Inactive item color
-                    drawerLabelStyle: {
-                      fontSize: 16, // Label font size
-                    },
-                  }}
-                >
-                  {/* Home Screen */}
-                  <Drawer.Screen
-                    name="Home"
-                    component={HomeStack}
-                    options={{
-                      drawerLabel: 'Home',
-                      headerShown: false,
-                      drawerIcon: ({ color, size }) => (
-                        <FontAwesome name="home" color={color} size={size} />
-                      ),
-                    }}
-                  />
+              <CartProvider>
+                <WishlistProvider>
+                  <ProductProvider>
+                    <ProductVariationProvider>
+                      <CategoryProvider>
+                        <NavigationContainer>
+                          <Drawer.Navigator
+                            initialRouteName="HomeStack"
+                            screenOptions={{
+                              drawerStyle: {
+                                backgroundColor: '#f4f4f4',
+                                width: 240,
+                              },
+                              drawerActiveTintColor: '#6200EE',
+                              drawerInactiveTintColor: '#555',
+                              drawerLabelStyle: {
+                                fontSize: 16,
+                              },
+                            }}
+                          >
+                            {/* Home Screen */}
+                            <Drawer.Screen
+                              name="Home"
+                              component={HomeStack}
+                              options={{
+                                drawerLabel: 'Home',
+                                headerShown: false,
+                                drawerIcon: ({ color, size }) => (
+                                  <FontAwesome name="home" color={color} size={size} />
+                                ),
+                              }}
+                            />
 
-                  {/* About Screen */}
-                  <Drawer.Screen
-                    name="About"
-                    component={AboutScreen}
-                    options={{
-                      drawerLabel: 'About Us',
-                      drawerIcon: ({ color, size }) => (
-                        <FontAwesome name="info-circle" color={color} size={size} />
-                      ),
-                    }}
-                  />
+                            {/* About Screen */}
+                            <Drawer.Screen
+                              name="About"
+                              component={AboutScreen}
+                              options={{
+                                drawerLabel: 'About Us',
+                                drawerIcon: ({ color, size }) => (
+                                  <FontAwesome name="info-circle" color={color} size={size} />
+                                ),
+                              }}
+                            />
 
-                  {/* Policy Screen */}
-                  <Drawer.Screen
-                    name="Policy"
-                    component={PolicyScreen}
-                    options={{
-                      drawerLabel: 'Privacy Policy',
-                      drawerIcon: ({ color, size }) => (
-                        <FontAwesome name="lock" color={color} size={size} />
-                      ),
-                    }}
-                  />
+                            {/* Policy Screen */}
+                            <Drawer.Screen
+                              name="Policy"
+                              component={PolicyScreen}
+                              options={{
+                                drawerLabel: 'Privacy Policy',
+                                drawerIcon: ({ color, size }) => (
+                                  <FontAwesome name="lock" color={color} size={size} />
+                                ),
+                              }}
+                            />
 
-                  {/* Terms & Services */}
-                  <Drawer.Screen
-                    name="Terms & Services"
-                    component={TermsAndServices}
-                    options={{
-                      drawerLabel: 'Terms & Services',
-                      drawerIcon: ({ color, size }) => (
-                        <FontAwesome name="file-text" color={color} size={size} />
-                      ),
-                    }}
-                  />
+                            {/* Terms & Services */}
+                            <Drawer.Screen
+                              name="Terms & Services"
+                              component={TermsAndServices}
+                              options={{
+                                drawerLabel: 'Terms & Services',
+                                drawerIcon: ({ color, size }) => (
+                                  <FontAwesome name="file-text" color={color} size={size} />
+                                ),
+                              }}
+                            />
 
-                  {/* Shipping Policy */}
-                  <Drawer.Screen
-                    name="Shipping Policy"
-                    component={ShippingPolicy}
-                    options={{
-                      drawerLabel: 'Shipping Policy',
-                      drawerIcon: ({ color, size }) => (
-                        <FontAwesome name="truck" color={color} size={size} />
-                      ),
-                    }}
-                  />
+                            {/* Shipping Policy */}
+                            <Drawer.Screen
+                              name="Shipping Policy"
+                              component={ShippingPolicy}
+                              options={{
+                                drawerLabel: 'Shipping Policy',
+                                drawerIcon: ({ color, size }) => (
+                                  <FontAwesome name="truck" color={color} size={size} />
+                                ),
+                              }}
+                            />
 
-                  {/* Refund Policy */}
-                  <Drawer.Screen
-                    name="Refund Policy"
-                    component={RefundPolicy}
-                    options={{
-                      drawerLabel: 'Refund Policy',
-                      drawerIcon: ({ color, size }) => (
-                        <FontAwesome name="money" color={color} size={size} />
-                      ),
-                    }}
-                  />
-                </Drawer.Navigator>
-              </NavigationContainer>
+                            {/* Refund Policy */}
+                            <Drawer.Screen
+                              name="Refund Policy"
+                              component={RefundPolicy}
+                              options={{
+                                drawerLabel: 'Refund Policy',
+                                drawerIcon: ({ color, size }) => (
+                                  <FontAwesome name="money" color={color} size={size} />
+                                ),
+                              }}
+                            />
+                          </Drawer.Navigator>
+                        </NavigationContainer>
+                      </CategoryProvider>
+                    </ProductVariationProvider>
+                  </ProductProvider>
+                </WishlistProvider>
+              </CartProvider>
             </SearchProvider>
           </ModalProvider>
         </AuthProvider>

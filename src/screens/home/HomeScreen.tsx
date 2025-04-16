@@ -4,7 +4,8 @@ import HomeSubsection from '../../components/HomeSubsection';
 import HomeWallCards from '../../components/HomeWallCards';
 import HomeServicesInfo from '../../components/HomeServicesInfo';
 import HomeCarousel from '../../components/HomeCarousel';
-import { useGetCategoriesQuery, useGetProductVariationsQuery } from '../../store/slices/apiSlice';
+import { useCategory } from '../../context/CategoryContext';
+import { useProductVariations } from '../../context/ProductVariation';
 import { useEffect, useState } from 'react';
 import ShimmerEffect from '../../components/ShimmerEffect';
 import HomeFAQQuestions from '../../components/HomeFAQQuestions';
@@ -14,32 +15,20 @@ import { placeHolderImageSquare } from '../../utils/constants';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
 
-import { useAppDispatch } from '../../store/store';
-import { apiSlice } from '../../store/slices/apiSlice';
 
 function HomeScreen({ navigation }: { navigation: any }) {
   const { error: apiError, handleError, clearError } = useApiError();
   const [parentdata, setParentdata] = useState([]);
   const [imageData, setImageData] = useState({});
   const { searchVisible } = useSearchBox();
-  const dispatch = useAppDispatch();
-
-  const {
-    data: categories,
-    error: categorieserror,
-    isLoading: categoryLoading,
-  } = useGetCategoriesQuery('');
-  const {
-    data: products,
-    error: productserror,
-    isLoading: productLoading,
-  } = useGetProductVariationsQuery('');
+  const { categories, categoriesError, categoryLoading } = useCategory();
+  const { products, productsError, productLoading } = useProductVariations();
 
   useEffect(() => {
-    if (categorieserror || productserror) {
+    if (categoriesError || productsError) {
       handleError('NETWORK_ERROR');
     }
-  }, [categorieserror, productserror, handleError]);
+  }, [categoriesError, productsError, handleError]);
 
   useEffect(() => {
     if (categories && products) {
@@ -104,13 +93,8 @@ function HomeScreen({ navigation }: { navigation: any }) {
           className="bg-blue-500 px-4 py-2 rounded"
           onPress={() => {
             clearError();
-            // Invalidate cache to force re-fetch
-            dispatch(apiSlice.util.invalidateTags(['User']));
-            // Reset the queries
-            dispatch(apiSlice.util.resetApiState());
-            // Re-fetch the data
-            dispatch(apiSlice.endpoints.getCategories.initiate(''));
-            dispatch(apiSlice.endpoints.getProductVariations.initiate(''));
+            refetchCategories();
+            refetchProductVariations();
           }}
         >
           <Text className="text-white">Try Again</Text>
