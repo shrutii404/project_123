@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Truck, SpinnerGap } from 'phosphor-react-native';
 import { useSelector } from 'react-redux';
-import apiService from '../services/apiService';
+import apiClient from '../context/apiClient';
 
 const OrderSummaryCard = ({ setWebViewUrl, availability }) => {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -21,7 +21,7 @@ const OrderSummaryCard = ({ setWebViewUrl, availability }) => {
     setCheckoutLoading(true);
 
     try {
-      const response = await apiService.phonepePayment({
+      const response = await apiClient.post('/phonepe/payment', {
         name: userDetails.name,
         amount: totalPrice,
         mobileNo: userDetails.phoneNo,

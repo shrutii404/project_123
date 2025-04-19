@@ -4,11 +4,10 @@ import Confetti from 'react-native-confetti';
 import { ArrowLeft, Check } from 'phosphor-react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
-import { cartSlice } from '../../store/slices/cartSlice';
+import { useCart } from '../../context/CartContext';
 
 const CheckoutSuccess = () => {
-  const dispatch = useDispatch();
+  const { clearCart } = useCart();
   const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
   const [windowHeight, setWindowHeight] = useState(Dimensions.get('window').height);
 
@@ -46,7 +45,7 @@ const CheckoutSuccess = () => {
       <View className="w-full max-w-md border-t-2 border-dotted mt-12 pt-4 flex items-center justify-center">
         <TouchableOpacity
           onPress={() => {
-            dispatch(cartSlice.actions.clearCart());
+            clearCart();
             navigation.navigate('Home');
           }}
           className="flex-row items-center gap-2 p-3 border border-black rounded-full"

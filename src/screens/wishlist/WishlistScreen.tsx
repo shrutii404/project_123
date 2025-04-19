@@ -1,33 +1,31 @@
 import { View, Text, ScrollView } from 'react-native';
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useGetProductVariationsQuery } from '../../store/slices/apiSlice';
+import { useWishlist } from '../../context/WishlistContext';
+import { useAuth } from '../../context/AuthContext';
+import { useProductVariations } from '../../context/ProductVariation';
 import ProductsCard from '../../components/ProductsCard';
-import { Image } from 'react-native-svg';
-import { wishlistSlice } from '../../store/slices/wishlistSlice';
+import { Image } from 'react-native';
+
 
 const WishlistScreen = () => {
-  const userDetails = useSelector((state) => state.user.user);
-  const wishlist = useSelector((state) => state.wishlist.items);
-  const dispatch = useDispatch();
-  const { data: products } = useGetProductVariationsQuery('');
+  const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
+  const { state: authState } = useAuth();
+  const { state: prodVarState } = useProductVariations();
+  const userDetails = authState.user;
+  const wishlist = wishlistState.wishlist;
+  const products = Array.isArray(prodVarState.productVariations) ? prodVarState.productVariations : [];
 
-  useEffect(() => {
-    if (products && userDetails && userDetails.FavouriteProd) {
-      const FilteredProducts =
-        products?.filter((product) => userDetails.FavouriteProd.includes(product.id.toString())) ||
-        [];
-
-      dispatch(wishlistSlice.actions.updateWishlist(FilteredProducts));
-    }
-  }, [products]);
+  // Compute filtered wishlist products directly for rendering
+  const filteredWishlist = Array.isArray(products) && userDetails && userDetails.FavouriteProd
+    ? products.filter((product) => userDetails.FavouriteProd.includes(product.id.toString()))
+    : [];
 
   return (
     <ScrollView className="bg-white  ">
       <Text className="text-2xl font-semibold mb-4 text-center text-black mt-8">Your Wishlist</Text>
       <View className="items-center w-full">
-        {wishlist && wishlist.length > 0 ? (
-          wishlist.map((product, index) => (
+        {filteredWishlist && filteredWishlist.length > 0 ? (
+          filteredWishlist.map((product: any, index: number) => (
             <ProductsCard data={product} key={`wishlist-cart-${index}`} />
           ))
         ) : (

@@ -7,8 +7,6 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
-  Animated,
-  ScrollView,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -70,10 +68,10 @@ const reviewdata = [
   },
 ];
 
-const HomeCarousel = ({ type }) => {
+const HomeCarousel = ({ type }: {type: 'herosection' | 'review'}) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const flatListRef = useRef(null);
-  const intervalRef = useRef(null);
+  const flatListRef = useRef<FlatList>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     startAutoScroll();
@@ -87,7 +85,7 @@ const HomeCarousel = ({ type }) => {
       if (nextIndex >= data.length) {
         nextIndex = 0;
       }
-      flatListRef.current.scrollToIndex({ index: nextIndex, animated: true });
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       setActiveIndex(nextIndex);
     }, 3000);
   };
@@ -98,29 +96,29 @@ const HomeCarousel = ({ type }) => {
     }
   };
 
-  const handleDotPress = (index) => {
-    flatListRef.current.scrollToIndex({ index, animated: true });
+  const handleDotPress = (index: number) => {
+    flatListRef.current?.scrollToIndex({ index, animated: true });
     setActiveIndex(index);
   };
 
-  const handleArrowPress = (direction) => {
+  const handleArrowPress = (direction: number) => {
     let newIndex = activeIndex + direction;
     if (newIndex < 0) {
       newIndex = data.length - 1;
     } else if (newIndex >= data.length) {
       newIndex = 0;
     }
-    flatListRef.current.scrollToIndex({ index: newIndex, animated: true });
+    flatListRef.current?.scrollToIndex({ index: newIndex, animated: true });
     setActiveIndex(newIndex);
   };
 
-  const handleScroll = (event) => {
+  const handleScroll = (event: any) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / windowWidth);
     setActiveIndex(index);
   };
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item }: { item: any }) => {
     return (
       <View style={styles.itemContainer}>
         {type == 'herosection' ? (
@@ -166,7 +164,7 @@ const HomeCarousel = ({ type }) => {
         ))}
       </View>
     );
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -182,13 +180,11 @@ const HomeCarousel = ({ type }) => {
         scrollEventThrottle={16}
       />
       {type == 'herosection' && renderDotIndicator()}
-
       {type == 'herosection' && (
         <TouchableOpacity style={styles.leftArrow} onPress={() => handleArrowPress(-1)}>
           <Text style={styles.arrowText}>◀</Text>
         </TouchableOpacity>
       )}
-
       {type == 'herosection' && (
         <TouchableOpacity style={styles.rightArrow} onPress={() => handleArrowPress(1)}>
           <Text style={styles.arrowText}>▶</Text>
@@ -253,4 +249,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeCarousel;
+export default React.memo(HomeCarousel);

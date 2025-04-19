@@ -1,10 +1,9 @@
 'use client';
 import { ReactNode, createContext, useReducer, useContext, useCallback, useMemo } from 'react';
-import axios from 'axios';
 import apiClient from './apiClient';
 import { apiEndpoint } from '../utils/constants';
 
-const api = apiEndpoint;
+const api = apiEndpoint + '/products';
 
 // Define your Product type
 type Product = {
@@ -97,7 +96,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const getAllProducts = useCallback(async () => {
     dispatch({ type: 'FETCH_PRODUCTS_REQUEST' });
     try {
-      const response = await apiClient.get<Product[]>(`${api}/products`);
+      const response = await apiClient.get<Product[]>(`${api}`);
       const products = response.data; // Extract data from AxiosResponse
 
       dispatch({ type: 'FETCH_PRODUCTS_SUCCESS', payload: products });
@@ -109,7 +108,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const getSingleProduct = useCallback(async (productId: number) => {
     dispatch({ type: 'FETCH_PRODUCTS_REQUEST' });
     try {
-      const response = await apiClient.get<Product>(`${api}/products/${productId}`);
+      const response = await apiClient.get<Product>(`${api}/${productId}`);
       const product = response.data;
       console.log(product);
 

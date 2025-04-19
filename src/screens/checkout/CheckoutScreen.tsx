@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { House } from 'phosphor-react-native';
-import apiService from '../../services/apiService';
+import apiClient from '../../context/apiClient';
 import OrderSummaryCard from '../../components/OrderSummaryCard';
 import WebView from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +20,7 @@ const CheckoutDetailsScreen = () => {
         const userDetailsString = await AsyncStorage.getItem('userDetails');
         const userDetailstemp = userDetailsString ? JSON.parse(userDetailsString) : null;
         console.log(userDetailstemp);
-        const response = await apiService.getUserDetails(userDetailstemp.id);
+        const response = await apiClient.get(`/users/${userDetailstemp.id}`);
         if (response.data) {
           setUserData(response.data);
 
@@ -28,10 +28,7 @@ const CheckoutDetailsScreen = () => {
             const address = response.data.addresses[0];
             const checkAvailability = async () => {
               try {
-                const response = await apiService.getDistance({
-                  destinationPincode: address.postalCode,
-                  sourcePincode: 248001,
-                });
+                const response = await apiClient.get(`/distance?destinationPincode=${address.postalCode}&sourcePincode=248001`);
                 console.log(response.data);
                 setAvailability(response.data.isAvailable ? 1 : 2);
               } catch (error) {

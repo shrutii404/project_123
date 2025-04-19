@@ -1,12 +1,4 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  TouchableOpacity,
-  TextInput,
-  Image,
-} from 'react-native';
+import { View, Text, ScrollView, Pressable, TouchableOpacity, TextInput } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,8 +8,7 @@ import axios from 'axios';
 import ReviewsSection from '../../components/ReviewSection';
 import SearchBar from '../../components/SearchBar';
 import { useSearchBox } from '../../context/SearchContext';
-import { useDispatch } from 'react-redux';
-import { addProduct } from '../../store/slices/cartSlice';
+
 import { apiEndpoint } from '../../utils/constants';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
@@ -31,7 +22,7 @@ const ProductDetailsScreen = ({ route }) => {
   const [rating, setRating] = useState(0);
   const [productData, setProductData] = useState();
   const { searchVisible } = useSearchBox();
-  const dispatch = useDispatch();
+
   const { error: apiError, handleError, clearError } = useApiError();
   const { addToCart } = useCart();
 
@@ -49,13 +40,12 @@ const ProductDetailsScreen = ({ route }) => {
   const getProductVariationDetails = async (id) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${apiEndpoint}api/product-variations/${id}`);
+      const response = await axios.get(`${apiEndpoint}/product-variations/${id}`);
       if (response.data) {
         setProductData(response.data);
 
         const ratings = response.data?.Review.map((item) => item.rating);
 
-        // Ensure there are ratings to avoid division by zero
         const averageRating =
           ratings?.length > 0
             ? ratings?.reduce((acc, rating) => acc + rating, 0) / ratings?.length
@@ -324,15 +314,12 @@ const ProductDetailsScreen = ({ route }) => {
                 <Text className="text-black font-[500] text-base">Similar Plywood Products</Text>
                 <Text className="text-gray-500">See all</Text>
               </View>
-              {/* <ProductsCard className="w-full border p-4" /> */}
             </View>
-
             {productData && productData?.Review && (
               <ReviewsSection data={productData.Review} allData={productData} avgRating={rating} />
             )}
           </View>
         </View>
-        {/* <HomeFooter /> */}
       </View>
     </ScrollView>
   );

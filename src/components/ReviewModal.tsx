@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import ApiService from '../services/apiService';
+import apiClient from '../context/apiClient';
 import { getErrorMessage } from '../core/error-handling/errorMessages';
 
 interface ReviewModalProps {
@@ -47,7 +47,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
         comment,
       };
 
-      await ApiService.createReview(payload);
+      await apiClient.post('/reviews', payload);
       Alert.alert('Success', 'Review submitted successfully!');
       onCloseModal();
     } catch (err) {

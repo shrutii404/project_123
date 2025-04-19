@@ -15,7 +15,7 @@ import { apiEndpoint } from '../utils/constants';
 
 // API endpoint
 
-const api = apiEndpoint;
+const api = apiEndpoint + '/product-variations';
 
 export type Review = {
   id: number;
@@ -203,7 +203,10 @@ export const ProductVariationProvider = ({ children }: { children: ReactNode }) 
         const response = await apiClient.get<ProductVariation[]>(`${api}?${queryString}`);
 
         const productVariations = response.data;
-        console.log('ProductVariation Context getProductVariationsByQuery', productVariations);
+        console.log(
+          'ProductVariation Context getProductVariationsByQuery',
+          productVariations.length
+        );
 
         dispatch({
           type: 'FETCH_PRODUCT_VARIATIONS_BY_QUERY_SUCCESS',

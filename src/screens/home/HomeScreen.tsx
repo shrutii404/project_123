@@ -2,27 +2,37 @@ import React from 'react';
 import { ScrollView, Text, View, Image, TouchableOpacity } from 'react-native';
 import HomeSubsection from '../../components/HomeSubsection';
 import HomeWallCards from '../../components/HomeWallCards';
-import HomeServicesInfo from '../../components/HomeServicesInfo';
 import HomeCarousel from '../../components/HomeCarousel';
-import { useCategory } from '../../context/CategoryContext';
+import { Category, useCategory } from '../../context/CategoryContext';
 import { useProductVariations } from '../../context/ProductVariation';
 import { useEffect, useState } from 'react';
 import ShimmerEffect from '../../components/ShimmerEffect';
-import HomeFAQQuestions from '../../components/HomeFAQQuestions';
 import SearchBar from '../../components/SearchBar';
 import { useSearchBox } from '../../context/SearchContext';
 import { placeHolderImageSquare } from '../../utils/constants';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
 
+interface IParentData {
+  name: string;
+  children: Category[];
+  image: string;
+  id: number;
+}
 
-function HomeScreen({ navigation }: { navigation: any }) {
+function HomeScreen() {
   const { error: apiError, handleError, clearError } = useApiError();
-  const [parentdata, setParentdata] = useState([]);
+  const [parentdata, setParentdata] = useState<IParentData[]>([]);
   const [imageData, setImageData] = useState({});
   const { searchVisible } = useSearchBox();
-  const { categories, categoriesError, categoryLoading } = useCategory();
-  const { products, productsError, productLoading } = useProductVariations();
+  const { state: catState, getAllCategories } = useCategory();
+  const { state: prodVarState, getAllProductVariations } = useProductVariations();
+  const categories = catState.categories;
+  const categoryLoading = catState.loading;
+  const categoriesError = catState.error;
+  const products = prodVarState.productVariations;
+  const productLoading = prodVarState.loading;
+  const productsError = prodVarState.error;
 
   useEffect(() => {
     if (categoriesError || productsError) {
@@ -52,7 +62,10 @@ function HomeScreen({ navigation }: { navigation: any }) {
 
         setParentdata(result);
 
-        const tempimageData = {};
+        const tempimageData: Record<
+          string,
+          { image: string; attributeType: string; attribute: string }
+        > = {};
         const attributeTypes = result.flatMap((r) => r.children.map((child) => child.name));
 
         result.forEach((parentItem) => {
@@ -70,7 +83,7 @@ function HomeScreen({ navigation }: { navigation: any }) {
                 );
                 tempimageData[value] = {
                   image: matchingItem.images[0] ?? placeHolderImageSquare,
-                  attributeType: matchedAttributeType,
+                  attributeType: matchedAttributeType ?? '',
                   attribute: value,
                 };
               }
@@ -86,15 +99,13 @@ function HomeScreen({ navigation }: { navigation: any }) {
   if (apiError) {
     return (
       <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-red-500 text-center mb-2">
-          {getErrorMessage(apiError)}
-        </Text>
+        <Text className="text-red-500 text-center mb-2">{getErrorMessage(apiError)}</Text>
         <TouchableOpacity
           className="bg-blue-500 px-4 py-2 rounded"
           onPress={() => {
             clearError();
-            refetchCategories();
-            refetchProductVariations();
+            getAllCategories();
+            getAllProductVariations();
           }}
         >
           <Text className="text-white">Try Again</Text>
@@ -121,7 +132,7 @@ function HomeScreen({ navigation }: { navigation: any }) {
       <View className="flex flex-1 items-center bg-white">
         <HomeCarousel type="herosection" />
         {parentdata.map((item, index) => (
-          <HomeSubsection key={index} data={item} imageData={imageData} />
+          <HomeSubsection key={index + item?.name} data={item} imageData={imageData} />
         ))}
         <View className="items-start w-[90%] mt-4">
           <Text className="text-black mb-4 font-semibold">Shop Best for Your Walls</Text>
@@ -131,17 +142,14 @@ function HomeScreen({ navigation }: { navigation: any }) {
             ))}
           </View>
         </View>
-        <View className="bg-[#F7F7F7] w-full py-10 items-center ">
-          <HomeServicesInfo />
-        </View>
         <View className="w-[90%] ">
           <Text className="mt-5 font-semibold text-black">Testimonials</Text>
           <Text className="mt-2 text-sm text-black">
             Real Stories, Real Smiles: Hear What Our Customers Have to Say!
           </Text>
         </View>
-        <View className='m-4 w-full'>
-        <HomeCarousel type="review" />
+        <View className="m-4 w-full">
+          <HomeCarousel type="review" />
         </View>
       </View>
     </ScrollView>

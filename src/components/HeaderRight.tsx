@@ -8,9 +8,9 @@ import FaviroteIcon from '../icons/FaviroteIcon';
 import { FontAwesome, Ionicons } from '@expo/vector-icons'; // Correct import for Expo
 import UserCheckedIcon from '../icons/UserCheckedIcons';
 import { useSearchBox } from '../context/SearchContext';
-import { RootState } from '../store';
 import { useAuth } from '../context/AuthContext'; // Import useAuth
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 
 interface HeaderRightProps {
   navigation: {
@@ -27,8 +27,11 @@ interface CartItem {
 const HeaderRight = ({ navigation }: HeaderRightProps) => {
   const { showModal, hideModal } = useModal();
   const { toggleSearchBar } = useSearchBox();
-  const { logout, userDetails } = useAuth(); // Get logout function from context
+  const { logout, state } = useAuth(); // Get logout function from context
+  const userDetails = state.user;
   const { cart } = useCart();
+  const { state: wishlistState } = useWishlist();
+  const wishlist = wishlistState.wishlist;
 
   const openUserModal = () => {
     showModal(
@@ -81,22 +84,17 @@ const HeaderRight = ({ navigation }: HeaderRightProps) => {
       <TouchableOpacity onPress={() => navigation.navigate('Cart')} className="relative">
         {cart && cart.length > 0 && (
           <View className="absolute -top-1 right-1 bg-red-500 h-5 w-5 rounded-full z-20 items-center justify-center">
-            <Text className="text-[10px]">
-              {cart.reduce((total: number, item: CartItem) => total + (item.quantity || 0), 0)}
-            </Text>
+            <Text className="text-[10px]">{cart.length}</Text>
           </View>
         )}
         <CartIcon />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Wishlist')} className="relative">
-        {userDetails &&
-          userDetails.FavouriteProd &&
-          Array.from(userDetails.FavouriteProd) instanceof Array &&
-          userDetails.FavouriteProd.length > 0 && ( // Ensure it's an array
-            <View className="absolute -top-1 right-1 bg-red-500 h-5 w-5 rounded-full z-20 items-center justify-center">
-              <Text className="text-[10px]">{new Set(userDetails.FavouriteProd).size}</Text>
-            </View>
-          )}
+        {wishlist.length > 0 && (
+          <View className="absolute -top-1 right-1 bg-red-500 h-5 w-5 rounded-full z-20 items-center justify-center">
+            <Text className="text-[10px]">{wishlist.length}</Text>
+          </View>
+        )}
         <FaviroteIcon />
       </TouchableOpacity>
 

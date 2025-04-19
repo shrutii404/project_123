@@ -47,10 +47,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 
 interface AuthContextType {
   state: AuthState;
-  login: (phoneNo: string) => Promise<void>;
-  resendOTP: (phoneNo: string) => Promise<void>;
-  verifyOTP: (phoneNo: string, otp: string) => Promise<void>;
-  logout: () => Promise<void>;
+  login: (phoneNo: string) => Promise<{ success: boolean; error?: string }>;
+  resendOTP: (phoneNo: string) => Promise<{ success: boolean; error?: string }>;
+  verifyOTP: (phoneNo: string, otp: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<{ success: boolean; error?: string }>;
 }
 
 interface DecodedToken {

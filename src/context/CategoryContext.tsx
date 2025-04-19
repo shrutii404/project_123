@@ -8,11 +8,10 @@ import React, {
   useMemo,
   useCallback,
 } from 'react';
-import axios from 'axios';
 import apiClient from './apiClient';
 import { apiEndpoint } from '../utils/constants';
 
-const api = apiEndpoint;
+const api = apiEndpoint+"/categories";
 
 export type Category = {
   categoryDiscount: number | null;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useSelector } from 'react-redux';
-import apiService from '../services/apiService';
+import apiClient from '../context/apiClient';
 import { Eye } from 'phosphor-react-native';
 import ShimmerEffect from './ShimmerEffect';
 
@@ -28,21 +27,11 @@ export type Order = {
 const OrderTable = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const userDetails = useSelector((state) => state.user.user);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
-    try {
-      if (userDetails && userDetails.id) {
-        const response = await apiService.getOrders(userDetails.id);
-
-        setOrders(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    }
     setLoading(false);
-  }, [userDetails]);
+  }, []);
 
   useEffect(() => {
     fetchOrders();

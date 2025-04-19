@@ -16,18 +16,10 @@ import {
   AntDesign as AntIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  useGetProductVariationsQuery,
-  useUpdateUserDetailsMutation,
-  useGetUserDetailsByIdQuery,
-  useLazyGetUserDetailsByIdQuery,
-} from '../../store/slices/apiSlice';
 // import apiService from '../../services/apiService'; // No longer needed
 import OrderTable from '../../components/OrderTable';
-import { userSlice } from '../../store/slices/userSlice';
+
 import ShimmerEffect from '../../components/ShimmerEffect';
-import type { RootState } from '../../store/store';
 
 interface UserAddress {
   id?: string;
@@ -74,16 +66,7 @@ const ManageProfileScreen = () => {
     city: '',
   });
 
-  const {
-    data: products,
-    error: productsError,
-    isLoading: productLoading,
-  } = useGetProductVariationsQuery('');
-
-  const [updateUser, { isLoading: isUpdateLoading }] = useUpdateUserDetailsMutation();
-  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-  const userDetails = useSelector((state: RootState) => state.user.user) as any;
   const handleChangeTab = (t: number) => {
     setTab(t);
     fetchUserDetails();
@@ -91,14 +74,6 @@ const ManageProfileScreen = () => {
 
   const handleEditName = () => {
     setModalType('editName');
-    if (userDetails?.name) {
-      const nameParts = userDetails.name.split(' ');
-      setDetails({
-        first: nameParts[0] || '',
-        last: nameParts[1] || '',
-        email: userDetails.email || '',
-      });
-    }
     setModalVisible(true);
   };
 
@@ -131,16 +106,9 @@ const ManageProfileScreen = () => {
   const handleDeleteAddress = async (id: string) => {
     try {
       setLoading(true);
-      const result = await updateUser({
-        deleteAddressId: id,
-      }).unwrap();
-
-      if (result) {
-        const updatedAddresses = address.filter((addr) => (addr.id || addr.addressId) !== id);
-        setAddress(updatedAddresses);
-        dispatch(userSlice.actions.updateUserDetails({ address: updatedAddresses }));
-        ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT);
-      }
+      const updatedAddresses = address.filter((addr) => (addr.id || addr.addressId) !== id);
+      setAddress(updatedAddresses);
+      ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT);
     } catch (error) {
       Alert.alert('Error', 'Failed to delete address');
     } finally {
@@ -156,54 +124,9 @@ const ManageProfileScreen = () => {
     setDetails((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Use RTK Query to fetch user details
-  const [
-    triggerGetUserDetails,
-    { data: userData, isLoading: isUserDetailsLoading, isError: isUserDetailsError },
-  ] = useLazyGetUserDetailsByIdQuery();
-
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
-      if (!userDetails || !userDetails.id) {
-        setLoading(false);
-        return;
-      }
-
-      // Trigger the RTK Query to fetch user details
-      const result = await triggerGetUserDetails(userDetails.id).unwrap();
-
-      if (result) {
-        // Update Redux store with latest user data
-        dispatch(userSlice.actions.updateUserDetails(result));
-
-        // Update local state
-        if (result.name) {
-          const nameParts = result.name.split(' ');
-          setDetails({
-            first: nameParts[0] || '',
-            last: nameParts[1] || '',
-            email: result.email || '',
-          });
-        }
-
-        // Handle address data
-        if (result.address) {
-          setAddress(Array.isArray(result.address) ? result.address : [result.address]);
-        }
-
-        // Process reviews data with product information
-        if (result.reviews && products) {
-          const updatedReviews = result.reviews.map((review: Review) => {
-            const product = products.find((p: any) => p.id === review.productId);
-            return {
-              ...review,
-              productName: product?.name || 'Unknown Product',
-            };
-          });
-          setReviews(updatedReviews);
-        }
-      }
     } catch (error) {
       console.error('Error fetching user details:', error);
       Alert.alert('Error', 'Failed to load user profile data');
@@ -213,10 +136,8 @@ const ManageProfileScreen = () => {
   };
 
   useEffect(() => {
-    if (userDetails && products) {
-      fetchUserDetails();
-    }
-  }, [userDetails?.id, products, tab]);
+    fetchUserDetails();
+  }, [tab]);
 
   const handleSaveDetails = async () => {
     try {
@@ -224,19 +145,6 @@ const ManageProfileScreen = () => {
       if (!details.first.trim() || !details.last.trim()) {
         Alert.alert('Error', 'Please enter both first and last name.');
         return;
-      }
-
-      const result = await updateUser({
-        name: `${details.first} ${details.last}`.trim(),
-      }).unwrap();
-
-      if (result) {
-        dispatch(
-          userSlice.actions.updateUserDetails({
-            name: `${details.first} ${details.last}`.trim(),
-          })
-        );
-        ToastAndroid.show('Name updated successfully!', ToastAndroid.SHORT);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to update name');
@@ -253,15 +161,6 @@ const ManageProfileScreen = () => {
         Alert.alert('Error', 'Please enter an email address');
         return;
       }
-
-      const result = await updateUser({
-        email: details.email.trim(),
-      }).unwrap();
-
-      if (result) {
-        dispatch(userSlice.actions.updateUserDetails({ email: result.email }));
-        ToastAndroid.show('Email updated successfully!', ToastAndroid.SHORT);
-      }
     } catch (error) {
       Alert.alert('Error', 'Failed to update email');
     } finally {
@@ -273,27 +172,6 @@ const ManageProfileScreen = () => {
   const handleSaveAddress = async () => {
     try {
       setLoading(true);
-      const result = await updateUser({
-        address: {
-          ...shipping,
-          country: shipping.country || 'India',
-        },
-      }).unwrap();
-
-      if (result) {
-        dispatch(userSlice.actions.updateUserDetails({ address: result.address }));
-        ToastAndroid.show(
-          `Address ${modalType === 'addAddress' ? 'added' : 'updated'} successfully!`,
-          ToastAndroid.SHORT
-        );
-        setShipping({
-          street: '',
-          state: '',
-          country: '',
-          postalCode: '',
-          city: '',
-        });
-      }
     } catch (error) {
       Alert.alert('Error', 'Failed to save address');
     } finally {
@@ -369,7 +247,7 @@ const ManageProfileScreen = () => {
             <Text className="text-black font-bold mb-2">First Name</Text>
             <TextInput
               className={`text-gray-300 border border-gray-300 rounded-xl p-2 font-medium`}
-              value={userDetails ? userDetails.name?.split(' ')[0] || '' : ''}
+              value={''}
               placeholder="First Name"
               placeholderTextColor="#6b7280"
               readOnly
@@ -377,7 +255,7 @@ const ManageProfileScreen = () => {
             <Text className="text-black font-bold my-2">Last Name</Text>
             <TextInput
               className={`text-gray-300 border border-gray-300 rounded-xl p-2 font-medium`}
-              value={userDetails ? userDetails.name?.split(' ')[1] || '' : ''}
+              value={''}
               placeholder="Last Name"
               placeholderTextColor="#6b7280"
               readOnly
@@ -388,9 +266,7 @@ const ManageProfileScreen = () => {
                 <Text className="text-gray-500 text-right pr-2">+91</Text>
               </View>
               <View className="w-[88%] justify-center">
-                <Text className="text-gray-400 text-left pl-2">
-                  {userDetails ? userDetails.phoneNo : ''}
-                </Text>
+                <Text className="text-gray-400 text-left pl-2">{}</Text>
               </View>
             </View>
             <Text className="text-black font-bold my-2">WhatsApp Number</Text>
@@ -399,9 +275,7 @@ const ManageProfileScreen = () => {
                 <Text className="text-gray-500 text-right pr-2">+91</Text>
               </View>
               <View className="w-[88%] justify-center">
-                <Text className="text-gray-400 text-left pl-2">
-                  {userDetails ? userDetails.phoneNo : ''}
-                </Text>
+                <Text className="text-gray-400 text-left pl-2">{}</Text>
               </View>
             </View>
             <View className="flex-row justify-end mt-3">

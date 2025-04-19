@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState} from 'react';
-import { Product } from '../types'; 
+import React, { createContext, useContext, useState } from 'react';
+import { Product } from '../types';
 import { useApiError } from '../core/hooks/useApiError';
 import { getErrorMessage } from '../core/error-handling/errorMessages';
-import ApiService from '../services/apiService';
+import apiClient from './apiClient';
+import { apiEndpoint } from '../utils/constants';
 
 interface SearchContextType {
   searchQuery: string;
@@ -43,7 +44,9 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setError(null);
       clearError();
 
-      const response = await ApiService.searchProducts(searchQuery);
+      const response = await apiClient.get(
+        `${apiEndpoint}/products/search?query=${encodeURIComponent(searchQuery)}`
+      );
       setSearchResults(response.data);
     } catch (err) {
       console.error('Search error:', err);

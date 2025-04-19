@@ -9,7 +9,9 @@ import React, {
   ReactNode,
 } from "react";
 import { useAuth } from "./AuthContext";
-import { toast } from "@/components/ui/use-toast";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 type CartItem = {
   salePrice: number;
@@ -43,50 +45,50 @@ const useCart = () => {
 
 const CartProvider = ({ children }: { children: ReactNode }) => {
   const getCartKey = () => {
-    if (typeof window !== "undefined") {
-      const userId = state.user?._id || state.user?.id;
-      console.log("userId",userId)
-      return userId ? `cart_${userId}` : "cart_guest";
-      
-    }
-    return "cart_guest";
+    const userId = state.user?._id || state.user?.id;
+    return userId ? `cart_${userId}` : "cart_guest";
   };
 
-  const loadCart = () => {
-    if (typeof window !== "undefined") {
-      const cartKey = getCartKey();
-      const savedCart = localStorage.getItem(cartKey);
-      if (savedCart) {
-        try {
-          return JSON.parse(savedCart);
-        } catch (error) {
-          console.error("Failed to parse cart data:", error);
-          return [];
-        }
-      }
-    }
-  };
   const { state } = useAuth();
-   const [cart, setCart] = useState<CartItem[]>(() => {
-      return loadCart() || [];
-   });
-  const [productsCount, setProductsCount] = useState<number>(cart?.length || 0);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [productsCount, setProductsCount] = useState<number>(0);
 
-  
-
-  const saveCart = () => {
-    if (typeof window !== "undefined") {
-      const cartKey = getCartKey();
-      localStorage.setItem(cartKey, JSON.stringify(cart));
-    }
-  };
-
-  
-
+  // Load cart from AsyncStorage on mount or user change
   useEffect(() => {
-    saveCart(); // Save cart data to localStorage when cart changes
-    setProductsCount(cart?.length);
-  }, [cart]);
+    const fetchCart = async () => {
+      try {
+        const cartKey = getCartKey();
+        const savedCart = await AsyncStorage.getItem(cartKey);
+        if (savedCart) {
+          setCart(JSON.parse(savedCart));
+        } else {
+          setCart([]);
+        }
+      } catch (error) {
+        console.error("Failed to load cart from AsyncStorage:", error);
+        setCart([]);
+      }
+    };
+    fetchCart();
+  }, [state.user]);
+
+  // Save cart to AsyncStorage whenever it changes
+  useEffect(() => {
+    const saveCart = async () => {
+      try {
+        const cartKey = getCartKey();
+        await AsyncStorage.setItem(cartKey, JSON.stringify(cart));
+      } catch (error) {
+        console.error("Failed to save cart to AsyncStorage:", error);
+      }
+    };
+    saveCart();
+    setProductsCount(cart.length);
+  }, [cart, state.user]);
+
+
+  
+
 
   useEffect(() => {
     if (state.user) {
@@ -96,45 +98,46 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.user]);
 
-  const mergeGuestCartWithUserCart = () => {
-    if (typeof window !== "undefined") {
+  const mergeGuestCartWithUserCart = async () => {
+    try {
       const guestCartKey = "cart_guest";
       const userCartKey = getCartKey();
-      console.log(userCartKey)
+      console.log(userCartKey);
 
-      const guestCart = localStorage.getItem(guestCartKey);
-      const userCart = localStorage.getItem(userCartKey);
+      const guestCart = await AsyncStorage.getItem(guestCartKey);
+      const userCart = await AsyncStorage.getItem(userCartKey);
 
-      console.log("guestCart",guestCart)
-      console.log("userCart",userCart)
+      console.log("guestCart", guestCart);
+      console.log("userCart", userCart);
 
       let guestCartItems: CartItem[] = [];
       let userCartItems: CartItem[] = [];
 
       try {
         guestCartItems = guestCart ? JSON.parse(guestCart) : [];
-      } catch (error) {
-        console.error("Failed to parse guest cart data:", error);
-      }
-
-      try {
         userCartItems = userCart ? JSON.parse(userCart) : [];
       } catch (error) {
-        console.error("Failed to parse user cart data:", error);
+        console.error("Failed to parse cart data:", error);
       }
 
-      // Merge carts and update localStorage
-      const mergedCart = mergeCarts(guestCartItems, userCartItems);
-      localStorage.setItem(userCartKey, JSON.stringify(mergedCart));
-      localStorage.removeItem(guestCartKey);
+      // Merge logic: add guest items not in user cart
+      const mergedCart = [...userCartItems];
+      guestCartItems.forEach((guestItem) => {
+        const exists = mergedCart.some(
+          (userItem) => userItem.productId === guestItem.productId
+        );
+        if (!exists) {
+          mergedCart.push(guestItem);
+        }
+      });
 
+      await AsyncStorage.setItem(userCartKey, JSON.stringify(mergedCart));
+      await AsyncStorage.removeItem(guestCartKey);
       setCart(mergedCart);
-      console.log("Merged cart:", mergedCart); // Add this line
+    } catch (error) {
+      console.error("Failed to merge guest cart with user cart:", error);
     }
   };
-
-
-
 
   const mergeCarts = (
     guestCart: CartItem[],
@@ -201,9 +204,7 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
       setCart((prevCart) => [...prevCart, { ...newItem, quantity }]);
     }
     const truncatedProductName = truncateText(newItem.name, 30);
-    toast({
-      description: `${truncatedProductName} added to cart!`,
-    });
+    alert(`${truncatedProductName} added to cart!`);
   };
 
   const truncateText = (text: string, maxLength: number): string => {
@@ -217,14 +218,12 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart((prevCart) =>
       prevCart.filter((item) => item.productId !== productId)
     );
-    toast({ description: `${truncatedProductName} removed from cart.` });
+    alert(`${truncatedProductName} removed from cart.`);
   };
 
   const clearCart = () => {
     setCart([]);
-    toast({
-      description: `Cart cleared successfully!`,
-    });
+    alert(`Cart cleared successfully!`);
   };
 
   const contextValue = useMemo(

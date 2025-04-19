@@ -42,8 +42,8 @@ const SearchResultScreen = () => {
       )}
       {searchResults && searchResults.length > 0 ? (
         <View className="w-full items-center">
-          {searchResults.map((product) => (
-            <ProductsCard data={product} />
+          {searchResults.map((product, index) => (
+            <ProductsCard key={index} data={product} />
           ))}
         </View>
       ) : (

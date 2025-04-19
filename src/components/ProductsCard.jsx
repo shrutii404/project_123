@@ -1,37 +1,13 @@
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  Pressable,
-  ActivityIndicator,
-  ToastAndroid,
-} from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, Text, Image, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch, useSelector } from 'react-redux';
-import { addProduct } from '../store/slices/cartSlice';
-import {
-  useAddToWishlistMutation,
-  useGetUserDetailsQuery,
-  useRemoveWishlistMutation,
-} from '../store/slices/apiSlice';
-import apiService from '../services/apiService';
-import { userSlice } from '../store/slices/userSlice';
 import { calculateActualPriceBasedOnDiscount } from '../utils/calculateDiscount';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { wishlistSlice } from '../store/slices/wishlistSlice';
 
 const ProductsCard = ({ data, key }) => {
   const navigation = useNavigation();
   const ratings = data?.Review.map((item) => item.rating);
-  const dispatch = useDispatch();
-  const userDetails = useSelector((state) => state.user.user);
 
-  const [addToWishlist] = useAddToWishlistMutation();
-  const [removeWishlist] = useRemoveWishlistMutation();
-  const [userId, setUserId] = useState();
   const [wishlisted, setWishlisted] = useState(false);
   const [wishlistloading, setWishlistLoading] = useState(false);
 
@@ -51,13 +27,6 @@ const ProductsCard = ({ data, key }) => {
     return pricePerSquareFoot.toFixed(0);
   }
 
-  const {
-    data: userData,
-    error: userDataError,
-    isLoading: userDataLoading,
-    refetch,
-  } = useGetUserDetailsQuery(userId);
-
   // Ensure there are ratings to avoid division by zero
   const averageRating =
     ratings?.length > 0 ? ratings?.reduce((acc, rating) => acc + rating, 0) / ratings?.length : 0;
@@ -67,7 +36,6 @@ const ProductsCard = ({ data, key }) => {
 
   const handleAddToCart = () => {
     const discountPrice = calculateActualPriceBasedOnDiscount(data.price, data.discount || 0);
-    dispatch(addProduct({ ...data, quantity: 1, discountPrice }));
   };
 
   const handleAddRemoveActions = async () => {
@@ -78,82 +46,20 @@ const ProductsCard = ({ data, key }) => {
     }
     await updateUser();
   };
-  const handleAddToWishlist = async () => {
-    setWishlistLoading(true);
-    try {
-      const userDetailsString = await AsyncStorage.getItem('userDetails');
-      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
-      const requestBody = { variationId: data.id };
 
-      const response = await apiService.addToWishlist(userDetails.id, requestBody);
-
-      if (response.data) {
-        await updateUser();
-        ToastAndroid.show(response.data.message, ToastAndroid.SHORT);
-      } else {
-        console.log('Error', response.error);
-        alert(response.error.data);
-      }
-    } catch (error) {
-      console.log('Error', error);
-    }
-    setWishlistLoading(false);
-  };
   const handleRemoveToWishlist = async () => {
     setWishlistLoading(true);
-    try {
-      const userDetailsString = await AsyncStorage.getItem('userDetails');
-      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
-      const requestBody = { variationId: data.id };
-
-      const response = await apiService.removeWishlist(userDetails.id, requestBody);
-
-      if (response.data) {
-        console.log('response', response.data);
-        await updateUser();
-        ToastAndroid.show('Added To WishList', ToastAndroid.SHORT);
-      } else {
-        alert(response.error.data.message);
-      }
-    } catch (error) {
-      console.log('Error', error);
-    }
     setWishlistLoading(false);
   };
 
-  const updateUser = async () => {
-    try {
-      const userDetailsString = await AsyncStorage.getItem('userDetails');
-      const userDetailsTemp = userDetailsString ? JSON.parse(userDetailsString) : null;
-      const userDetailsResponse = await apiService.getUserDetails(userDetailsTemp.id);
-      if (userDetailsResponse.data) {
-        dispatch(userSlice.actions.userLogin(userDetailsResponse.data));
-
-        const productsVariations = await apiService.getProductVariations();
-        const products = productsVariations.data;
-        const userDetailsData = userDetailsResponse.data;
-
-        if (products && userDetailsData && userDetailsData.FavouriteProd) {
-          const FilteredProducts =
-            products?.filter((product) =>
-              userDetailsData.FavouriteProd.includes(product.id.toString())
-            ) || [];
-
-          dispatch(wishlistSlice.actions.updateWishlist(FilteredProducts));
-        }
-      }
-    } catch (error) {}
+  const handleAddToWishlist = async () => {
+    setWishlistLoading(true);
+    setWishlistLoading(false);
   };
 
-  useEffect(() => {
-    if (userDetails && userDetails.FavouriteProd) {
-      const isProductFavorited = userDetails.FavouriteProd.includes(data.id.toString());
-      setWishlisted(isProductFavorited);
-    }
-  }, [userDetails]);
   return (
     <Pressable
-      className={`w-[90%] bg-white rounded-md shadow-md p-2 mb-5 relative border border-gray-200 p-3`}
+      className={`w-[90%] bg-white rounded-md shadow-md p-2 mb-5 relative border border-gray-200`}
       onPress={handlePress}
       key={key}
     >
