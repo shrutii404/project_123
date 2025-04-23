@@ -16,10 +16,11 @@ import {
   AntDesign as AntIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
-// import apiService from '../../services/apiService'; // No longer needed
+import apiClient from '../../context/apiClient';
 import OrderTable from '../../components/OrderTable';
-
 import ShimmerEffect from '../../components/ShimmerEffect';
+import { useAuth } from '../../context/AuthContext';
+import { apiEndpoint } from '../../utils/constants';
 
 interface UserAddress {
   id?: string;
@@ -45,9 +46,13 @@ interface UserFormDetails {
   first: string;
   last: string;
   email: string;
+  phoneNo: string;
 }
 
 const ManageProfileScreen = () => {
+  const { state: authState } = useAuth();
+  const userId = authState.user?._id || 'me';
+
   const [tab, setTab] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState('editName');
@@ -57,6 +62,7 @@ const ManageProfileScreen = () => {
     first: '',
     last: '',
     email: '',
+    phoneNo: '',
   });
   const [shipping, setShipping] = useState<UserAddress>({
     street: '',
@@ -127,6 +133,18 @@ const ManageProfileScreen = () => {
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
+      const response = await apiClient.get(`${apiEndpoint}/users/${userId}`);
+      const user = response.data;
+      const firstName = user.name.split(' ')[0];
+      const lastName = user.name.split(' ')[1];
+      setDetails({
+        first: firstName || '',
+        last: lastName || '',
+        email: user.email || '',
+        phoneNo: user.phoneNo || '',
+      });
+      setAddress(user.addresses || []);
+      setReviews(user.reviews || []);
     } catch (error) {
       console.error('Error fetching user details:', error);
       Alert.alert('Error', 'Failed to load user profile data');
@@ -146,6 +164,11 @@ const ManageProfileScreen = () => {
         Alert.alert('Error', 'Please enter both first and last name.');
         return;
       }
+      await apiClient.put(`${apiEndpoint}/users/${userId}`, {
+        name: `${details.first} ${details.last}`,
+      });
+      ToastAndroid.show('Name updated successfully!', ToastAndroid.SHORT);
+      fetchUserDetails();
     } catch (error) {
       Alert.alert('Error', 'Failed to update name');
     } finally {
@@ -161,6 +184,11 @@ const ManageProfileScreen = () => {
         Alert.alert('Error', 'Please enter an email address');
         return;
       }
+      await apiClient.put(`${apiEndpoint}/users/${userId}`, {
+        email: details.email,
+      });
+      ToastAndroid.show('Email updated successfully!', ToastAndroid.SHORT);
+      fetchUserDetails();
     } catch (error) {
       Alert.alert('Error', 'Failed to update email');
     } finally {
@@ -172,7 +200,17 @@ const ManageProfileScreen = () => {
   const handleSaveAddress = async () => {
     try {
       setLoading(true);
+      await apiClient.post(`${apiEndpoint}/address`, {
+        userId: userId,
+        street: shipping.street,
+        city: shipping.city,
+        state: shipping.state,
+        country: shipping.country,
+        postalCode: shipping.postalCode,
+        selected: true,
+      });
     } catch (error) {
+      console.log({ error });
       Alert.alert('Error', 'Failed to save address');
     } finally {
       setLoading(false);
@@ -246,16 +284,16 @@ const ManageProfileScreen = () => {
           <View className="w-[95%]">
             <Text className="text-black font-bold mb-2">First Name</Text>
             <TextInput
-              className={`text-gray-300 border border-gray-300 rounded-xl p-2 font-medium`}
-              value={''}
+              className={`text-gray-800 border border-gray-300 rounded-xl p-2 font-medium`}
+              value={details.first}
               placeholder="First Name"
               placeholderTextColor="#6b7280"
               readOnly
             />
             <Text className="text-black font-bold my-2">Last Name</Text>
             <TextInput
-              className={`text-gray-300 border border-gray-300 rounded-xl p-2 font-medium`}
-              value={''}
+              className={`text-gray-800 border border-gray-300 rounded-xl p-2 font-medium`}
+              value={details.last}
               placeholder="Last Name"
               placeholderTextColor="#6b7280"
               readOnly
@@ -266,16 +304,7 @@ const ManageProfileScreen = () => {
                 <Text className="text-gray-500 text-right pr-2">+91</Text>
               </View>
               <View className="w-[88%] justify-center">
-                <Text className="text-gray-400 text-left pl-2">{}</Text>
-              </View>
-            </View>
-            <Text className="text-black font-bold my-2">WhatsApp Number</Text>
-            <View className="rounded border-2 h-10 border-gray-500 flex-row w-[90%]">
-              <View className="w-[12%] justify-center  border-gray-500 border-r-2 bg-gray-200">
-                <Text className="text-gray-500 text-right pr-2">+91</Text>
-              </View>
-              <View className="w-[88%] justify-center">
-                <Text className="text-gray-400 text-left pl-2">{}</Text>
+                <Text className="text-gray-400 text-left pl-2">{details.phoneNo}</Text>
               </View>
             </View>
             <View className="flex-row justify-end mt-3">
