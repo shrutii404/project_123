@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { Modal, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import apiClient from '../context/apiClient';
+import { apiEndpoint } from '../utils/constants';
 import { getErrorMessage } from '../core/error-handling/errorMessages';
+import { useAuth } from '../context/AuthContext';
 
 interface ReviewModalProps {
   isModalVisible: boolean;
@@ -15,6 +17,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const {state: {user}} = useAuth();
+
 
   const handleStarPress = (star: number) => {
     setRating(star);
@@ -33,24 +37,22 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
 
     setLoading(true);
     try {
-      const userDetailsString = await AsyncStorage.getItem('userDetails');
-      const userDetails = userDetailsString ? JSON.parse(userDetailsString) : null;
-
-      if (!userDetails || !userDetails.token) {
+      if (!user) {
         Alert.alert('Login Required', 'You need to log in to write a review.', [{ text: 'OK' }]);
         return;
       }
 
       const payload = {
-        productId,
+        userId: user._id,
+        variationId: productId,
         rating,
         comment,
       };
 
-      await apiClient.post('/reviews', payload);
+      await apiClient.post(`${apiEndpoint}/review`, payload);
       Alert.alert('Success', 'Review submitted successfully!');
       onCloseModal();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Review submission error:', err);
       const errorMessage = getErrorMessage(err);
       Alert.alert('Error', errorMessage);

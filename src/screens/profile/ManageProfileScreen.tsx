@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
   Modal,
   ToastAndroid,
-  Alert,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   FontAwesome5 as Icon,
   Ionicons,
@@ -21,6 +20,7 @@ import OrderTable from '../../components/OrderTable';
 import ShimmerEffect from '../../components/ShimmerEffect';
 import { useAuth } from '../../context/AuthContext';
 import { apiEndpoint } from '../../utils/constants';
+import { useApiError } from '../../core/hooks/useApiError';
 
 interface UserAddress {
   id?: string;
@@ -73,7 +73,18 @@ const ManageProfileScreen = () => {
   });
 
   const [loading, setLoading] = useState(true);
+  const { error: apiError, handleError, clearError } = useApiError();
+
+  // Show toast on API errors once
+  useEffect(() => {
+    if (apiError) {
+      ToastAndroid.show(apiError, ToastAndroid.SHORT);
+      clearError();
+    }
+  }, [apiError]);
+
   const handleChangeTab = (t: number) => {
+    clearError();
     setTab(t);
     fetchUserDetails();
   };
@@ -110,13 +121,28 @@ const ManageProfileScreen = () => {
   };
 
   const handleDeleteAddress = async (id: string) => {
+    clearError();
+    setLoading(true);
     try {
-      setLoading(true);
-      const updatedAddresses = address.filter((addr) => (addr.id || addr.addressId) !== id);
-      setAddress(updatedAddresses);
+      await apiClient.delete(`${apiEndpoint}/address/${id}`);
+      setAddress(address.filter((addr) => (addr.id || addr.addressId) !== id));
       ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT);
     } catch (error) {
-      Alert.alert('Error', 'Failed to delete address');
+      handleError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    clearError();
+    setLoading(true);
+    try {
+      await apiClient.delete(`${apiEndpoint}/review/delete/${reviewId}`);
+      setReviews(reviews.filter((r) => r.id !== reviewId));
+      ToastAndroid.show('Review deleted successfully!', ToastAndroid.SHORT);
+    } catch (error) {
+      handleError(error);
     } finally {
       setLoading(false);
     }
@@ -131,23 +157,17 @@ const ManageProfileScreen = () => {
   };
 
   const fetchUserDetails = async () => {
+    clearError();
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await apiClient.get(`${apiEndpoint}/users/${userId}`);
       const user = response.data;
-      const firstName = user.name.split(' ')[0];
-      const lastName = user.name.split(' ')[1];
-      setDetails({
-        first: firstName || '',
-        last: lastName || '',
-        email: user.email || '',
-        phoneNo: user.phoneNo || '',
-      });
+      const [firstName, lastName] = user.name.split(' ');
+      setDetails({ first: firstName || '', last: lastName || '', email: user.email || '', phoneNo: user.phoneNo || '' });
       setAddress(user.addresses || []);
       setReviews(user.reviews || []);
     } catch (error) {
-      console.error('Error fetching user details:', error);
-      Alert.alert('Error', 'Failed to load user profile data');
+      handleError(error);
     } finally {
       setLoading(false);
     }
@@ -158,79 +178,67 @@ const ManageProfileScreen = () => {
   }, [tab]);
 
   const handleSaveDetails = async () => {
+    clearError();
+    setLoading(true);
+    if (!details.first.trim() || !details.last.trim()) {
+      handleError('REQUIRED_FIELD');
+      return;
+    }
     try {
-      setLoading(true);
-      if (!details.first.trim() || !details.last.trim()) {
-        Alert.alert('Error', 'Please enter both first and last name.');
-        return;
-      }
-      await apiClient.put(`${apiEndpoint}/users/${userId}`, {
-        name: `${details.first} ${details.last}`,
-      });
+      await apiClient.put(`${apiEndpoint}/users/${userId}`, { name: `${details.first} ${details.last}` });
       ToastAndroid.show('Name updated successfully!', ToastAndroid.SHORT);
       fetchUserDetails();
+      setModalVisible(false);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update name');
+      handleError(error);
     } finally {
       setLoading(false);
-      setModalVisible(false);
     }
   };
 
   const handleSaveEmail = async () => {
+    clearError();
+    setLoading(true);
+    if (!details.email.trim()) {
+      handleError('INVALID_EMAIL');
+      return;
+    }
     try {
-      setLoading(true);
-      if (!details.email.trim()) {
-        Alert.alert('Error', 'Please enter an email address');
-        return;
-      }
-      await apiClient.put(`${apiEndpoint}/users/${userId}`, {
-        email: details.email,
-      });
+      await apiClient.put(`${apiEndpoint}/users/${userId}`, { email: details.email, phoneNo: details.phoneNo });
       ToastAndroid.show('Email updated successfully!', ToastAndroid.SHORT);
       fetchUserDetails();
+      setModalVisible(false);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update email');
+      handleError(error);
     } finally {
       setLoading(false);
-      setModalVisible(false);
     }
   };
 
   const handleSaveAddress = async () => {
+    clearError();
+    setLoading(true);
     try {
-      setLoading(true);
-      await apiClient.post(`${apiEndpoint}/address`, {
-        userId: userId,
-        street: shipping.street,
-        city: shipping.city,
-        state: shipping.state,
-        country: shipping.country,
-        postalCode: shipping.postalCode,
-        selected: true,
-      });
+      await apiClient.post(`${apiEndpoint}/address`, { userId, street: shipping.street, city: shipping.city, state: shipping.state, country: shipping.country, postalCode: shipping.postalCode, selected: true });
+      ToastAndroid.show('Address saved successfully!', ToastAndroid.SHORT);
+      fetchUserDetails();
+      setModalVisible(false);
     } catch (error) {
-      console.log({ error });
-      Alert.alert('Error', 'Failed to save address');
+      handleError(error);
     } finally {
       setLoading(false);
-      setModalVisible(false);
     }
   };
 
   const handleUpdate = async () => {
+    clearError();
+    setLoading(true);
     try {
-      setLoading(true);
-      if (modalType === 'editName') {
-        await handleSaveDetails();
-      } else if (modalType === 'editEmail') {
-        await handleSaveEmail();
-      } else if (modalType === 'editAddress' || modalType === 'addAddress') {
-        await handleSaveAddress();
-      }
+      if (modalType === 'editName') await handleSaveDetails();
+      else if (modalType === 'editEmail') await handleSaveEmail();
+      else if (modalType === 'editAddress' || modalType === 'addAddress') await handleSaveAddress();
     } catch (error) {
-      console.error(error);
-      ToastAndroid.show('An error occurred. Please try again.', ToastAndroid.SHORT);
+      handleError(error);
     } finally {
       setLoading(false);
     }
@@ -299,7 +307,7 @@ const ManageProfileScreen = () => {
               readOnly
             />
             <Text className="text-black font-bold my-2">Phone Number</Text>
-            <View className="rounded border-2 h-10 border-gray-500 flex-row w-[90%]">
+            <View className="rounded border-2 h-10 border-gray-500 flex-row w-[100%]">
               <View className="w-[12%] justify-center  border-gray-500 border-r-2 bg-gray-200">
                 <Text className="text-gray-500 text-right pr-2">+91</Text>
               </View>
@@ -323,14 +331,14 @@ const ManageProfileScreen = () => {
             {reviews &&
               reviews.length > 0 &&
               reviews.map((r) => (
-                <View className="border rounded-lg border-gray-200 p-2">
+                <View key={r.id} className="border rounded-lg border-gray-200 p-2">
                   <View className=" flex-row justify-between  items-center">
                     <View className="flex-row items-center mb-2">
                       {Array.from({ length: r.rating }).map((_, index) => (
                         <Ionicons key={index} name="star" size={20} color="gold" />
                       ))}
                     </View>
-                    <Pressable className="bg-red-600 rounded p-1">
+                    <Pressable className="bg-red-600 rounded p-1" onPress={() => handleDeleteReview(r.id)}>
                       <AntIcons name="delete" size={10} color="white" />
                     </Pressable>
                   </View>
@@ -447,7 +455,6 @@ const ManageProfileScreen = () => {
                       value={shipping.street}
                       placeholderTextColor="#6b7280"
                       onChangeText={(t) => handleAddressChange('street', t)}
-                      // Add state and handler for street
                     />
                     <TextInput
                       className="h-10 border border-gray-300 rounded-md px-3 text-black"
@@ -455,7 +462,6 @@ const ManageProfileScreen = () => {
                       value={shipping.city}
                       placeholderTextColor="#6b7280"
                       onChangeText={(t) => handleAddressChange('city', t)}
-                      // Add state and handler for city
                     />
                     <TextInput
                       className="h-10 border border-gray-300 rounded-md px-3 text-black"
@@ -463,7 +469,6 @@ const ManageProfileScreen = () => {
                       value={shipping.state}
                       placeholderTextColor="#6b7280"
                       onChangeText={(t) => handleAddressChange('state', t)}
-                      // Add state and handler for state
                     />
 
                     <TextInput
@@ -472,7 +477,6 @@ const ManageProfileScreen = () => {
                       value={shipping.postalCode}
                       placeholderTextColor="#6b7280"
                       onChangeText={(t) => handleAddressChange('postalCode', t)}
-                      // Add state and handler for postal code
                     />
                   </>
                 )}

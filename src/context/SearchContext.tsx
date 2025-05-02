@@ -4,6 +4,7 @@ import { useApiError } from '../core/hooks/useApiError';
 import { getErrorMessage } from '../core/error-handling/errorMessages';
 import apiClient from './apiClient';
 import { apiEndpoint } from '../utils/constants';
+import { Category } from './CategoryContext';
 
 interface SearchContextType {
   searchQuery: string;
@@ -38,16 +39,43 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const handleFilter = async () => {
     if (!searchQuery.trim()) return;
-
+    setLoading(true);
+    setError(null);
+    clearError();
     try {
-      setLoading(true);
-      setError(null);
-      clearError();
-
-      const response = await apiClient.get(
-        `${apiEndpoint}/products/search?query=${encodeURIComponent(searchQuery)}`
+      // Fetch categories and filter by query
+      const catRes = await apiClient.get<Category[]>(`${apiEndpoint}/categories`);
+      const mappedCatProds = catRes.data
+        .filter(cat =>
+          cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .flatMap(cat =>
+          cat.products.map(p => ({
+            _id: p.id.toString(),
+            name: p.name,
+            description: p.description,
+            price: p.price,
+            thumbnail: p.images?.[0],
+          }))
+        );
+      // Fetch product variations matching query
+      const varRes = await apiClient.get(
+        `${apiEndpoint}/product-variations?name=${encodeURIComponent(searchQuery)}`
       );
-      setSearchResults(response.data);
+      const mappedVarProds = varRes.data.map((v: any) => ({
+        _id: v.product.id.toString(),
+        name: v.product.name,
+        description: v.product.description,
+        price: v.product.price,
+        thumbnail: v.product.images?.[0],
+      }));
+      // Merge and dedupe
+      const all = [...mappedCatProds, ...mappedVarProds];
+      const uniqueMap: Record<string, any> = {};
+      all.forEach(prod => {
+        uniqueMap[prod._id] = prod;
+      });
+      setSearchResults(Object.values(uniqueMap));
     } catch (err) {
       console.error('Search error:', err);
       const errorMessage = getErrorMessage(err);

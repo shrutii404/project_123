@@ -5,7 +5,7 @@ import axios from 'axios';
 import apiClient from './apiClient';
 import { apiEndpoint } from '../utils/constants';
 
-const route = apiEndpoint + 'wishlist';
+const route = `${apiEndpoint}/wishlist`;
 
 type WishListItem = {
   id: string;

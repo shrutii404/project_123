@@ -86,7 +86,6 @@ const ProductDetailsScreen = ({ route }) => {
       attributes: {
         size: data.size,
         color: data.color,
-        // Add any other attributes your product has
       },
     };
     addToCart(productToAdd, quantity);
@@ -111,7 +110,7 @@ const ProductDetailsScreen = ({ route }) => {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center">
         <ShimmerEffect />
       </View>
     );

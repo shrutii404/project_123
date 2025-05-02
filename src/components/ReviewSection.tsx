@@ -4,13 +4,12 @@ import ReviewItem from './ReviewItem';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import ReviewModal from './ReviewModal';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { useAuth } from '../context/AuthContext';
 
 const ReviewsSection = ({ data, avgRating, allData }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation();
-  const user = useSelector((state: RootState) => state.user.user);
+  const user = useAuth() 
 
   const handleOpenModal = () => {
     setIsModalVisible(true);
@@ -28,7 +27,7 @@ const ReviewsSection = ({ data, avgRating, allData }) => {
     setIsModalVisible(false);
   };
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating - fullStars >= 0.5;
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
@@ -54,13 +53,13 @@ const ReviewsSection = ({ data, avgRating, allData }) => {
           className="bg-neutral-900 text-neutral-50 rounded-md h-9 px-2 flex-row items-center justify-center"
           onPress={checkUserLogin}
         >
-          <Text className="text-xs">WRITE A REVIEW</Text>
+        <Text className="text-xs text-white">WRITE A REVIEW</Text>
         </TouchableOpacity>
       </View>
       <ReviewModal
         isModalVisible={isModalVisible}
         onCloseModal={handleCloseModal}
-        productId={allData.product.id}
+        productId={allData.id}
       />
 
       <View className="h-[1px] bg-gray-300 my-4" />
