@@ -1,9 +1,8 @@
 // client/src/WishlistContext.tsx
-'use client';
 import React, { createContext, ReactNode, useContext, useEffect, useReducer } from 'react';
-import axios from 'axios';
 import apiClient from './apiClient';
 import { apiEndpoint } from '../utils/constants';
+import { useAuth } from './AuthContext';
 
 const route = `${apiEndpoint}/wishlist`;
 
@@ -103,27 +102,25 @@ const reducer = (state: WishListState, action: WishListAction): WishListState =>
 
 export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { state: authState } = useAuth();
+  const userId = authState.user?._id || authState.user?.id;
 
   useEffect(() => {
-    const getAllWishlistItems = async () => {
+    if (!userId) return;
+    const fetchWishlist = async () => {
       dispatch({ type: 'FETCH_ALL_WISHLIST_ITEMS_REQUEST' });
-
       try {
-        const response = await apiClient.get<WishListItem[]>(route);
-        dispatch({
-          type: 'FETCH_ALL_WISHLIST_ITEMS_SUCCESS',
-          payload: response.data,
-        });
+        const resp = await apiClient.get<{ FavouriteProd: string[] }>(
+          `${apiEndpoint}/users/${userId}`
+        );
+        const items: WishListItem[] = resp.data.FavouriteProd.map((id) => ({ id, userId, productVariationId: id }));
+        dispatch({ type: 'FETCH_ALL_WISHLIST_ITEMS_SUCCESS', payload: items });
       } catch (error: any) {
-        dispatch({
-          type: 'FETCH_ALL_WISHLIST_ITEMS_FAILURE',
-          payload: error.message || 'Failed to fetch wishlist items',
-        });
+        dispatch({ type: 'FETCH_ALL_WISHLIST_ITEMS_FAILURE', payload: error.message });
       }
     };
-
-    getAllWishlistItems();
-  }, []);
+    fetchWishlist();
+  }, [userId]);
 
   const getSingleWishlistItem = async (id: string) => {
     try {
@@ -140,36 +137,26 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addToWishlist = async (userId: string, productVariationId: string) => {
+  const addToWishlist = async (_userId: string, productVariationId: string) => {
+    if (!userId) return;
     try {
-      const response = await apiClient.post<WishListItem>(route, {
-        userId,
-        productVariationId,
-      });
+      await apiClient.post(`${apiEndpoint}/users/${userId}/addWishlist`, { variationId: productVariationId });
       dispatch({
         type: 'ADD_TO_WISHLIST_SUCCESS',
-        payload: response.data,
+        payload: { id: productVariationId, userId, productVariationId },
       });
     } catch (error: any) {
-      dispatch({
-        type: 'FETCH_ALL_WISHLIST_ITEMS_FAILURE',
-        payload: error.message || 'Failed to add item to wishlist',
-      });
+      dispatch({ type: 'FETCH_ALL_WISHLIST_ITEMS_FAILURE', payload: error.message });
     }
   };
 
-  const removeFromWishlist = async (id: string) => {
+  const removeFromWishlist = async (_id: string) => {
+    if (!userId) return;
     try {
-      await apiClient.delete(`${route}/${id}`);
-      dispatch({
-        type: 'DELETE_FROM_WISHLIST_SUCCESS',
-        payload: id,
-      });
+      await apiClient.post(`${apiEndpoint}/users/${userId}/removeWishlist`, { variationId: _id });
+      dispatch({ type: 'DELETE_FROM_WISHLIST_SUCCESS', payload: _id });
     } catch (error: any) {
-      dispatch({
-        type: 'FETCH_ALL_WISHLIST_ITEMS_FAILURE',
-        payload: error.message || 'Failed to delete item from wishlist',
-      });
+      dispatch({ type: 'FETCH_ALL_WISHLIST_ITEMS_FAILURE', payload: error.message });
     }
   };
 
