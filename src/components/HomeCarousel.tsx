@@ -18,22 +18,22 @@ const data = [
   {
     id: 1,
     title: 'Image 1',
-    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB4.1f812e5e.jpg&w=750&q=75',
+    uri: require('../assets/FB0.jpg'),
   },
   {
     id: 2,
     title: 'Image 2',
-    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB2.242cd48c.jpg&w=750&q=75',
+    uri: require('../assets/FB1.jpg'),
   },
   {
     id: 3,
     title: 'Image 3',
-    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB3.81169011.jpg&w=750&q=75',
+    uri: require('../assets/FB2.jpg'),
   },
   {
     id: 4,
     title: 'Image 4',
-    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FB1.943a9817.jpg&w=750&q=75',
+    uri: require('../assets/FB3.jpg'),
   },
 ];
 
@@ -68,7 +68,7 @@ const reviewdata = [
   },
 ];
 
-const HomeCarousel = ({ type }: {type: 'herosection' | 'review'}) => {
+const HomeCarousel = ({ type }: { type: 'herosection' | 'review' }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -122,7 +122,7 @@ const HomeCarousel = ({ type }: {type: 'herosection' | 'review'}) => {
     return (
       <View style={styles.itemContainer}>
         {type == 'herosection' ? (
-          <Image source={{ uri: item.uri }} className="w-full h-full" />
+          <Image source={item.uri} className="w-full h-full" />
         ) : (
           <View className="w-[90%] h-[200px] p-4 rounded-lg bg-white border border-gray-300 items-center flex-col  justify-center">
             <View>
@@ -164,7 +164,7 @@ const HomeCarousel = ({ type }: {type: 'herosection' | 'review'}) => {
         ))}
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
