@@ -1,4 +1,12 @@
-import { View, Text, ScrollView, Pressable, TouchableOpacity, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -8,6 +16,8 @@ import axios from 'axios';
 import ReviewsSection from '../../components/ReviewSection';
 import SearchBar from '../../components/SearchBar';
 import { useSearchBox } from '../../context/SearchContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { useAuth } from '../../context/AuthContext';
 
 import { apiEndpoint } from '../../utils/constants';
 import { useApiError } from '../../core/hooks/useApiError';
@@ -25,6 +35,11 @@ const ProductDetailsScreen = ({ route }) => {
 
   const { error: apiError, handleError, clearError } = useApiError();
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, state: wishlistState } = useWishlist();
+  const { state: authState } = useAuth();
+  const userId = authState.user?._id || authState.user?.id;
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
 
   const handleQuantity = (type) => {
     if (type == 'increment') {
@@ -67,6 +82,12 @@ const ProductDetailsScreen = ({ route }) => {
     }
   }, [data]);
 
+  useEffect(() => {
+    setWishlisted(
+      wishlistState.wishlist.some((item) => item.productVariationId === data.id.toString())
+    );
+  }, [wishlistState.wishlist, data.id]);
+
   const handlePincodeChange = (text) => {
     setPincode(text);
   };
@@ -89,6 +110,22 @@ const ProductDetailsScreen = ({ route }) => {
       },
     };
     addToCart(productToAdd, quantity);
+  };
+
+  const handleAddRemoveWishlist = async () => {
+    if (!userId) return;
+    setWishlistLoading(true);
+    if (wishlisted) {
+      const wishItem = wishlistState.wishlist.find(
+        (item) => item.productVariationId === data.id.toString()
+      );
+      if (wishItem) {
+        await removeFromWishlist(wishItem.id);
+      }
+    } else {
+      await addToWishlist(userId, data.id.toString());
+    }
+    setWishlistLoading(false);
   };
 
   if (apiError) {
@@ -134,9 +171,19 @@ const ProductDetailsScreen = ({ route }) => {
             <View className="bg-[#dee2e6] rounded items-center p-1 px-2 ">
               <Text className="text-black">{data.product.name}</Text>
             </View>
-            <View className=" z-20 rounded p-1 bg-[#dee2e6]  ">
-              <Ionicons name="heart-outline" color="gray" size={20} />
-            </View>
+            <TouchableOpacity
+              className="z-20 rounded p-1 bg-[#dee2e6]"
+              onPress={handleAddRemoveWishlist}
+              disabled={wishlistLoading}
+            >
+              {wishlistLoading ? (
+                <ActivityIndicator size="small" color="gray" />
+              ) : wishlisted ? (
+                <Ionicons name="heart" color="red" size={20} />
+              ) : (
+                <Ionicons name="heart-outline" color="gray" size={20} />
+              )}
+            </TouchableOpacity>
           </View>
           <ProductImageSlider images={data.images} />
           <View className="mt-7">
