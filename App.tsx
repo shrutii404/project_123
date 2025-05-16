@@ -28,6 +28,7 @@ import TermsAndServices from './src/screens/TermsAndServices/TermsAndServices';
 import ShippingPolicy from './src/screens/ShippingPolicy/ShippingPolicy';
 import RefundPolicy from './src/screens/RefundPolicy/RefundPolicy';
 import AboutScreen from './src/screens/AboutScreen/AboutScreen';
+import CategoryScreen from './src/screens/Category/CategoryScreen';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { CartProvider } from './src/context/CartContext';
@@ -178,6 +179,27 @@ function HomeStack() {
       <Stack.Screen
         name="Shopcart"
         component={ShopCartScreen}
+        options={({ navigation }) => ({
+          headerTitle: '',
+          headerLeft: () => (
+            <View className="flex flex-row items-center">
+              <MenuIcon />
+              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+                <Image
+                  source={{
+                    uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
+                  }}
+                  className="h-9 w-9 rounded-full bg-black"
+                />
+              </TouchableOpacity>
+            </View>
+          ),
+          headerRight: () => <HeaderRight navigation={navigation} />,
+        })}
+      />
+      <Stack.Screen
+        name="Category"
+        component={CategoryScreen}
         options={({ navigation }) => ({
           headerTitle: '',
           headerLeft: () => (

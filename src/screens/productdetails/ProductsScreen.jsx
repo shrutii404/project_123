@@ -1,17 +1,14 @@
 import { View, Text, ImageBackground, ScrollView, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import ProductDiscovery from '../../components/ProductDiscovery';
 import ProductsCard from '../../components/ProductsCard';
 import ShimmerEffect from '../../components/ShimmerEffect';
-import SearchBar from '../../components/SearchBar';
-import { useSearchBox } from '../../context/SearchContext';
 import { useNavigation } from '@react-navigation/native';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
 import { useProductVariations } from '../../context/ProductVariation';
 
 const ProductsScreen = ({ route }) => {
-  const { searchVisible } = useSearchBox();
   const navigation = useNavigation();
   const { error: apiError, clearError } = useApiError();
   const { state: productState, getProductVariationsByQuery } = useProductVariations();

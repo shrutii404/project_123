@@ -15,9 +15,9 @@ interface HomeSubsectionProps {
 
 const HomeSubsection: React.FC<HomeSubsectionProps> = ({ data, imageData }) => {
   const navigation = useNavigation();
-  const handlePress = (Type: string, category: string) => {
-    navigation.navigate('Products', {
-      data: { Type, category, data, imageData },
+  const handlePress = (Type: string, category: string, childName: string) => {
+    navigation.navigate('Category', {
+      data: { Type, category, childName, data, imageData },
     });
   };
 
@@ -33,7 +33,7 @@ const HomeSubsection: React.FC<HomeSubsectionProps> = ({ data, imageData }) => {
               return (
                 <Pressable
                   className="items-center"
-                  onPress={() => handlePress(item, data.name)}
+                  onPress={() => handlePress(item, data.name, data.children[0].name)}
                   key={item}
                 >
                   <Image

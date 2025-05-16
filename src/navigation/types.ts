@@ -29,4 +29,12 @@ export type RootStackParamList = {
   ShippingPolicy: undefined;
   RefundPolicy: undefined;
   About: undefined;
+  Category: {
+    data: {
+      Type: string;
+      category: string;
+      data: any;
+      imageData: any;
+    };
+  };
 };
