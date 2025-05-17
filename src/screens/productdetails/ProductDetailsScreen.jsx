@@ -24,10 +24,10 @@ import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
 import { useCart } from '../../context/CartContext';
 
+const HARDWARE_STORE_PINCODE = 248001;
+
 const ProductDetailsScreen = ({ route }) => {
   const [quantity, setQuantity] = useState(1);
-  const [pincode, setPincode] = useState('');
-  const [type, setType] = useState('description');
   const [loading, setLoading] = useState(false);
   const [rating, setRating] = useState(0);
   const [productData, setProductData] = useState();
@@ -40,17 +40,31 @@ const ProductDetailsScreen = ({ route }) => {
   const userId = authState.user?._id || authState.user?.id;
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [wishlisted, setWishlisted] = useState(false);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [pincodeResult, setPincodeResult] = useState(null);
+  const [pincodeError, setPincodeError] = useState(null);
+  const [pincode, setPincode] = useState('');
+  const [debounceTimeout, setDebounceTimeout] = useState(null);
+  const [type, setType] = useState('description');
 
-  const handleQuantity = (type) => {
-    if (type == 'increment') {
-      setQuantity((prev) => prev + 1);
-    } else {
-      if (quantity > 1) {
-        setQuantity((prev) => prev - 1);
-      }
-    }
-  };
   const { data } = route.params;
+
+  const calculateActualPriceBasedOnDiscount = (price, discount) => {
+    if (!discount || discount <= 0) return price;
+    return Math.round(price - (price * discount) / 100);
+  };
+
+  const renderAttributes = () => {
+    if (!productData?.attributes) return null;
+    return Object.entries(productData.attributes).map(([key, value]) => (
+      <View key={key} style={{ flexDirection: 'row', marginBottom: 2 }}>
+        <Text style={{ color: '#555', fontWeight: 'bold', marginRight: 4 }}>
+          {key.replace(/_/g, ' ')}:
+        </Text>
+        <Text style={{ color: '#222' }}>{value}</Text>
+      </View>
+    ));
+  };
 
   const getProductVariationDetails = async (id) => {
     try {
@@ -65,6 +79,7 @@ const ProductDetailsScreen = ({ route }) => {
           ratings?.length > 0
             ? ratings?.reduce((acc, rating) => acc + rating, 0) / ratings?.length
             : 0;
+
         setRating(averageRating);
         clearError();
       }
@@ -84,49 +99,106 @@ const ProductDetailsScreen = ({ route }) => {
 
   useEffect(() => {
     setWishlisted(
-      wishlistState.wishlist.some((item) => item.productVariationId === data.id.toString())
+      wishlistState.wishlist.some((item) => item.productVariationId === String(productData?.id))
     );
-  }, [wishlistState.wishlist, data.id]);
+  }, [wishlistState.wishlist, productData?.id]);
 
-  const handlePincodeChange = (text) => {
-    setPincode(text);
-  };
-
-  const handleType = (texttype) => {
-    setType(texttype);
+  const handleQuantity = (type) => {
+    if (type == 'increment') {
+      if (productData && quantity < productData.stock) {
+        setQuantity((prev) => prev + 1);
+      }
+    } else {
+      if (quantity > 1) {
+        setQuantity((prev) => prev - 1);
+      }
+    }
   };
 
   const handleAddToCart = () => {
+    if (!productData) return;
     const productToAdd = {
-      productId: data.id,
-      name: data.name,
+      productId: productData.id,
+      name: productData.name,
       price: productData.price,
-      discountPrice: productData.discountPrice,
+      discountPrice: calculateActualPriceBasedOnDiscount(productData.price, productData.discount),
       quantity: quantity,
-      images: data.images,
-      attributes: {
-        size: data.size,
-        color: data.color,
-      },
+      images: productData.images,
+      attributes: productData.attributes,
     };
     addToCart(productToAdd, quantity);
   };
 
   const handleAddRemoveWishlist = async () => {
-    if (!userId) return;
+    if (!userId || !productData) return;
     setWishlistLoading(true);
     if (wishlisted) {
       const wishItem = wishlistState.wishlist.find(
-        (item) => item.productVariationId === data.id.toString()
+        (item) => item.productVariationId === String(productData.id)
       );
       if (wishItem) {
         await removeFromWishlist(wishItem.id);
       }
     } else {
-      await addToWishlist(userId, data.id.toString());
+      await addToWishlist(userId, String(productData.id));
     }
     setWishlistLoading(false);
   };
+
+  const isValidIndianPincode = (pincode) => {
+    const pincodePattern = /^[0-9]{6}$/;
+    return pincodePattern.test(pincode);
+  };
+
+  const checkAvailability = async () => {
+    setPincodeError(null);
+    setPincodeResult(null);
+    if (!isValidIndianPincode(pincode)) {
+      setPincodeError('Please enter a valid 6-digit pincode.');
+      return;
+    }
+    setPincodeLoading(true);
+    try {
+      const api = `${apiEndpoint}/getDistance/isAvailable`;
+      const response = await axios.post(api, {
+        sourcePincode: HARDWARE_STORE_PINCODE,
+        destinationPincode: parseInt(pincode, 10),
+      });
+
+      if (response.data && response.data.isAvailable) {
+        setPincodeResult('Available for delivery!');
+      } else {
+        setPincodeResult('Not available for delivery.');
+      }
+    } catch (error) {
+      setPincodeError('Failed to check availability.');
+    } finally {
+      setPincodeLoading(false);
+    }
+  };
+
+  const handlePincodeChange = (text) => {
+    setPincode(text);
+    setPincodeError(null);
+    setPincodeResult(null);
+    if (debounceTimeout) clearTimeout(debounceTimeout);
+    const timeout = setTimeout(() => {
+      if (isValidIndianPincode(text)) {
+        checkAvailability();
+      }
+    }, 500);
+    setDebounceTimeout(timeout);
+  };
+
+  const handleType = (type) => {
+    setType(type);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout) clearTimeout(debounceTimeout);
+    };
+  }, [debounceTimeout]);
 
   if (apiError) {
     return (
@@ -166,10 +238,10 @@ const ProductDetailsScreen = ({ route }) => {
       <View>
         <SearchBar searchVisible={searchVisible} />
         <View className="px-4 ">
-          <Text className="text-black text-xl font-bold ">{data.name}</Text>
+          <Text className="text-black text-xl font-bold ">{productData.name}</Text>
           <View className="flex-row justify-between my-2">
             <View className="bg-[#dee2e6] rounded items-center p-1 px-2 ">
-              <Text className="text-black">{data.product.name}</Text>
+              <Text className="text-black">{productData.product?.name}</Text>
             </View>
             <TouchableOpacity
               className="z-20 rounded p-1 bg-[#dee2e6]"
@@ -185,27 +257,39 @@ const ProductDetailsScreen = ({ route }) => {
               )}
             </TouchableOpacity>
           </View>
-          <ProductImageSlider images={data.images} />
+          <ProductImageSlider images={productData.images} />
           <View className="mt-7">
             <View className="flex-row items-center">
-              <Text className="text-black text-sm">
-                <Text className="font-bold text-xl">{data.price}/</Text>price
-              </Text>
+              {productData.discount > 0 ? (
+                <>
+                  <Text className="text-black text-sm">
+                    <Text className="font-bold text-xl line-through text-gray-400">
+                      {productData.price}
+                    </Text>
+                    <Text className="font-bold text-xl text-black ml-2">
+                      {calculateActualPriceBasedOnDiscount(productData.price, productData.discount)}
+                    </Text>
+                  </Text>
+                  <Text className="text-red-700 text-sm ml-2">({productData.discount}% OFF)</Text>
+                </>
+              ) : (
+                <Text className="font-bold text-xl text-black">{productData.price}</Text>
+              )}
               <Text className="text-black ml-2 text-sm">(Inc. all taxes)</Text>
             </View>
-            <View className="text-base">
-              <Text className="text-red-700 text-sm">(6/sq.ft)</Text>
-            </View>
+            <View className="mt-2">{renderAttributes()}</View>
             <View className="mt-2 flex-row items-center ">
               <View className="bg-[#ff0a54] flex-row items-center rounded-lg px-2 py-1 justify-center w-1/6">
                 <Text className="text-white text-sm mr-2">{rating.toFixed(1)}</Text>
-                <Ionicons name="star" color="#fff" Name="text-white" size={15} />
+                <Ionicons name="star" color="#fff" size={15} />
               </View>
               <View className="text-xs ml-3 ">
-                <Text className="text-black">({data.Review.length} review)</Text>
+                <Text className="text-black">({productData.Review?.length || 0} review)</Text>
               </View>
               <View className="bg-[#d9ed92] rounded-md px-2 py-1 ml-3">
-                <Text className="text-[#4c956c]">In-Stock</Text>
+                <Text className="text-[#4c956c]">
+                  {productData.stock > 0 ? 'In-Stock' : 'Out of Stock'}
+                </Text>
               </View>
               <View className="flex-row items-center ml-3">
                 <Text className="text-black">Return Policy:</Text>
@@ -233,6 +317,7 @@ const ProductDetailsScreen = ({ route }) => {
               <TouchableOpacity
                 className="bg-black rounded flex-row items-center justify-center w-[55%] ml-4"
                 onPress={handleAddToCart}
+                disabled={productData.stock === 0}
               >
                 <Ionicons name="cart-outline" size={30} color="#fff" />
                 <Text className="text-white font-bold ml-2">ADD TO CART</Text>
@@ -244,15 +329,35 @@ const ProductDetailsScreen = ({ route }) => {
                 <TextInput
                   placeholder="Enter Pincode"
                   placeholderTextColor={'gray'}
-                  className="ml-3"
+                  className="ml-3 p-2"
                   onChangeText={handlePincodeChange}
                   value={pincode}
+                  keyboardType="numeric"
+                  maxLength={6}
                 />
               </View>
-              <TouchableOpacity className="bg-black w-[30%] items-center justify-center rounded-r">
-                <Text className=" text-white font-bold ">Check</Text>
+              <TouchableOpacity
+                className="bg-black w-[30%] items-center justify-center rounded-r"
+                onPress={checkAvailability}
+                disabled={pincodeLoading}
+              >
+                {pincodeLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className=" text-white font-bold ">Check</Text>
+                )}
               </TouchableOpacity>
             </View>
+            {pincodeResult && (
+              <View style={{ marginVertical: 8 }}>
+                <Text style={{ color: 'green', textAlign: 'center' }}>{pincodeResult}</Text>
+              </View>
+            )}
+            {pincodeError && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={{ color: 'red', textAlign: 'center' }}>{pincodeError}</Text>
+              </View>
+            )}
             <View className="bg-[#FEF8E8] flex-row items-center p-2 px-5 rounded-full">
               <MaterialCommunityIcons name="truck-outline" size={30} color="#000" />
               <Text className="text-black mx-5">
