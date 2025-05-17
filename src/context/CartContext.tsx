@@ -1,34 +1,23 @@
-"use client";
-
-import React, {
-  useState,
-  useContext,
-  createContext,
-  useMemo,
-  useEffect,
-  ReactNode,
-} from "react";
-import { useAuth } from "./AuthContext";
+import React, { useState, useContext, createContext, useMemo, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
+import Toast from 'react-native-toast-message';
 
 type CartItem = {
-  salePrice: number;
-  realPrice: number;
-  quantity: number;
-  productId: number;
+  id: string;
   name: string;
-  images: string[];
+  price: number;
+  quantity: number;
+  image: string;
   attributes: Record<string, string>;
 };
 
 type CartContextType = {
   cart: CartItem[];
-  increment: (productId: number) => void;
-  decrement: (productId: number) => void;
+  increment: (id: string) => void;
+  decrement: (id: string) => void;
   addToCart: (item: CartItem, quantity?: number) => void;
-  removeFromCart: (productId: number) => void;
+  removeFromCart: (id: string) => void;
   clearCart: () => void;
   productsCount: number;
 };
@@ -38,7 +27,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
+    throw new Error('useCart must be used within a CartProvider');
   }
   return context;
 };
@@ -46,7 +35,7 @@ const useCart = () => {
 const CartProvider = ({ children }: { children: ReactNode }) => {
   const getCartKey = () => {
     const userId = state.user?._id || state.user?.id;
-    return userId ? `cart_${userId}` : "cart_guest";
+    return userId ? `cart_${userId}` : 'cart_guest';
   };
 
   const { state } = useAuth();
@@ -65,7 +54,7 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
           setCart([]);
         }
       } catch (error) {
-        console.error("Failed to load cart from AsyncStorage:", error);
+        console.error('Failed to load cart from AsyncStorage:', error);
         setCart([]);
       }
     };
@@ -79,36 +68,32 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
         const cartKey = getCartKey();
         await AsyncStorage.setItem(cartKey, JSON.stringify(cart));
       } catch (error) {
-        console.error("Failed to save cart to AsyncStorage:", error);
+        console.error('Failed to save cart to AsyncStorage:', error);
       }
     };
     saveCart();
     setProductsCount(cart.length);
   }, [cart, state.user]);
 
-
-  
-
-
   useEffect(() => {
     if (state.user) {
-      console.log("After login",state.user)
+      console.log('After login', state.user);
       mergeGuestCartWithUserCart();
-      console.log(cart)
+      console.log(cart);
     }
   }, [state.user]);
 
   const mergeGuestCartWithUserCart = async () => {
     try {
-      const guestCartKey = "cart_guest";
+      const guestCartKey = 'cart_guest';
       const userCartKey = getCartKey();
       console.log(userCartKey);
 
       const guestCart = await AsyncStorage.getItem(guestCartKey);
       const userCart = await AsyncStorage.getItem(userCartKey);
 
-      console.log("guestCart", guestCart);
-      console.log("userCart", userCart);
+      console.log('guestCart', guestCart);
+      console.log('userCart', userCart);
 
       let guestCartItems: CartItem[] = [];
       let userCartItems: CartItem[] = [];
@@ -117,15 +102,13 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
         guestCartItems = guestCart ? JSON.parse(guestCart) : [];
         userCartItems = userCart ? JSON.parse(userCart) : [];
       } catch (error) {
-        console.error("Failed to parse cart data:", error);
+        console.error('Failed to parse cart data:', error);
       }
 
       // Merge logic: add guest items not in user cart
       const mergedCart = [...userCartItems];
       guestCartItems.forEach((guestItem) => {
-        const exists = mergedCart.some(
-          (userItem) => userItem.productId === guestItem.productId
-        );
+        const exists = mergedCart.some((userItem) => userItem.id === guestItem.id);
         if (!exists) {
           mergedCart.push(guestItem);
         }
@@ -135,95 +118,85 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.removeItem(guestCartKey);
       setCart(mergedCart);
     } catch (error) {
-      console.error("Failed to merge guest cart with user cart:", error);
+      console.error('Failed to merge guest cart with user cart:', error);
     }
   };
 
-  const mergeCarts = (
-    guestCart: CartItem[],
-    userCart: CartItem[]
-  ): CartItem[] => {
-    const map = new Map<number, CartItem>();
+  const mergeCarts = (guestCart: CartItem[], userCart: CartItem[]): CartItem[] => {
+    const map = new Map<string, CartItem>();
 
-    userCart.forEach((item) => map.set(item.productId, item));
+    userCart.forEach((item) => map.set(item.id, item));
     guestCart.forEach((item) => {
-      if (map.has(item.productId)) {
-        const existingItem = map.get(item.productId)!;
+      if (map.has(item.id)) {
+        const existingItem = map.get(item.id)!;
         existingItem.quantity += item.quantity;
       } else {
-        map.set(item.productId, item);
+        map.set(item.id, item);
       }
     });
 
     return Array.from(map.values());
   };
 
-  const increment = (productId: number) => {
+  const increment = (id: string) => {
     setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.productId === productId
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
+      prevCart.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item))
     );
   };
 
-  const decrement = (productId: number) => {
-    const item = cart.find((item) => item.productId === productId);
+  const decrement = (id: string) => {
+    const item = cart.find((item) => item.id === id);
 
     if (!item) return;
 
     if (item.quantity === 1) {
-      removeFromCart(productId);
+      removeFromCart(id);
     } else {
       setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.productId === productId
-            ? { ...item, quantity: item.quantity - 1 }
-            : item
-        )
+        prevCart.map((item) => (item.id === id ? { ...item, quantity: item.quantity - 1 } : item))
       );
     }
   };
 
   const addToCart = (newItem: CartItem, quantity: number = 1) => {
-    if(!cart) return;
-    const existingItem = cart.find(
-      (item) => item.productId === newItem.productId
-    );
+    if (!cart) return;
+    const existingItem = cart.find((item) => item.id === newItem.id);
 
     if (existingItem) {
       setCart((prevCart) =>
         prevCart.map((item) =>
-          item.productId === existingItem.productId
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item.id === existingItem.id ? { ...item, quantity: item.quantity + quantity } : item
         )
       );
     } else {
       setCart((prevCart) => [...prevCart, { ...newItem, quantity }]);
     }
     const truncatedProductName = truncateText(newItem.name, 30);
-    alert(`${truncatedProductName} added to cart!`);
+    Toast.show({
+      type: 'success',
+      text1: `${truncatedProductName} added to cart!`,
+      position: 'bottom',
+    });
   };
 
   const truncateText = (text: string, maxLength: number): string => {
     return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
   };
 
-  const removeFromCart = (productId: number) => {
-    const productName =
-      cart.find((item) => item.productId === productId)?.name || "";
+  const removeFromCart = (id: string) => {
+    const productName = cart.find((item) => item.id === id)?.name || '';
     const truncatedProductName = truncateText(productName, 30);
-    setCart((prevCart) =>
-      prevCart.filter((item) => item.productId !== productId)
-    );
-    alert(`${truncatedProductName} removed from cart.`);
+    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+    Toast.show({
+      type: 'info',
+      text1: `${truncatedProductName} removed from cart.`,
+      position: 'bottom',
+    });
   };
 
   const clearCart = () => {
     setCart([]);
-    alert(`Cart cleared successfully!`);
+    Toast.show({ type: 'info', text1: `Cart cleared successfully!`, position: 'bottom' });
   };
 
   const contextValue = useMemo(
@@ -239,9 +212,7 @@ const CartProvider = ({ children }: { children: ReactNode }) => {
     [cart, productsCount]
   );
 
-  return (
-    <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>
-  );
+  return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
 };
 
 export { useCart, CartProvider };

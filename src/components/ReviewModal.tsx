@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
-import { Modal, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { Modal, StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Toast from 'react-native-toast-message';
 import apiClient from '../context/apiClient';
 import { apiEndpoint } from '../utils/constants';
 import { getErrorMessage } from '../core/error-handling/errorMessages';
@@ -17,8 +17,9 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const {state: {user}} = useAuth();
-
+  const {
+    state: { user },
+  } = useAuth();
 
   const handleStarPress = (star: number) => {
     setRating(star);
@@ -26,19 +27,23 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
 
   const handleSubmitReview = async () => {
     if (!comment.trim()) {
-      Alert.alert('Error', 'Please write a comment.');
+      Toast.show({ type: 'error', text1: 'Please write a comment.', position: 'bottom' });
       return;
     }
 
     if (rating === 0) {
-      Alert.alert('Error', 'Please select a rating.');
+      Toast.show({ type: 'error', text1: 'Please select a rating.', position: 'bottom' });
       return;
     }
 
     setLoading(true);
     try {
       if (!user) {
-        Alert.alert('Login Required', 'You need to log in to write a review.', [{ text: 'OK' }]);
+        Toast.show({
+          type: 'error',
+          text1: 'You need to log in to write a review.',
+          position: 'bottom',
+        });
         return;
       }
 
@@ -50,12 +55,12 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isModalVisible, onCloseModal,
       };
 
       await apiClient.post(`${apiEndpoint}/review`, payload);
-      Alert.alert('Success', 'Review submitted successfully!');
+      Toast.show({ type: 'success', text1: 'Review submitted successfully!' });
       onCloseModal();
     } catch (err: unknown) {
       console.error('Review submission error:', err);
       const errorMessage = getErrorMessage(err);
-      Alert.alert('Error', errorMessage);
+      Toast.show({ type: 'error', text1: errorMessage, position: 'bottom' });
     } finally {
       setLoading(false);
     }

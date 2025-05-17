@@ -25,7 +25,7 @@ const initialState: AuthState = {
   error: null,
 };
 
-const api = apiEndpoint;
+const api = apiEndpoint.slice(0, -4);
 const AUTH_TOKEN_KEY = 'auth_token';
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {

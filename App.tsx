@@ -36,6 +36,7 @@ import { WishlistProvider } from './src/context/WishlistContext';
 import { ProductProvider } from './src/context/ProductContext';
 import { ProductVariationProvider } from './src/context/ProductVariation';
 import { CategoryProvider } from './src/context/CategoryContext';
+import Toast from 'react-native-toast-message';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -347,6 +348,7 @@ function App(): React.JSX.Element {
                           />
                         </Drawer.Navigator>
                       </NavigationContainer>
+                      <Toast position="bottom" />
                     </CategoryProvider>
                   </ProductVariationProvider>
                 </ProductProvider>

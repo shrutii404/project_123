@@ -9,7 +9,7 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  images: string[];
+  image: string;
 }
 
 const EmptyCart = () => {
@@ -26,16 +26,19 @@ const EmptyCart = () => {
 const Product = ({ data, key }: { data: CartItem; key: string }) => {
   const { removeFromCart } = useCart();
 
-  const handleRemove = (productId: number) => {
+  const handleRemove = (productId: string) => {
     removeFromCart(productId);
   };
+
+  // Defensive: fallback image if images is missing or empty
+  const imageUri = data.image;
 
   return (
     <View key={key}>
       <View className="flex-row">
         <Image
           source={{
-            uri: `${data.images[0]}`,
+            uri: imageUri,
           }}
           className="w-[40%] h-24 rounded-md border-2"
         />

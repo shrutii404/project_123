@@ -5,20 +5,22 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
-  ToastAndroid,
 } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { LoginScreenProps } from '../../types/auth';
 import { useAuth } from '../../context/AuthContext';
 import { useApiError } from '../../core/hooks/useApiError';
 import { getErrorMessage } from '../../core/error-handling/errorMessages';
+import Toast from 'react-native-toast-message';
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+const LoginScreen: React.FC = ({ navigation }: any) => {
   const { error: apiError, handleError, clearError } = useApiError();
-  const { login, verifyOTP, isLoading: isAuthLoading, error: authError } = useAuth();
+  const {
+    login,
+    verifyOTP,
+    state: { loading: isAuthLoading },
+  } = useAuth();
   const [phonenumber, setPhonenumber] = useState<string>('');
   const [verify, setVerify] = useState<boolean>(false);
   const [resend, setResend] = useState<boolean>(false);
@@ -92,14 +94,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         setTimer(180);
         setResend(false);
         clearError();
-        ToastAndroid.show('OTP resent successfully', ToastAndroid.SHORT);
+        Toast.show({ type: 'success', text1: 'OTP resent successfully' });
       } else {
         handleError('NETWORK_ERROR');
-        ToastAndroid.show(result.error || getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
+        Toast.show({
+          type: 'error',
+          text1: result.error || getErrorMessage('NETWORK_ERROR'),
+          position: 'bottom',
+        });
       }
     } catch (error) {
       handleError('NETWORK_ERROR');
-      ToastAndroid.show(getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
+      Toast.show({ type: 'error', text1: getErrorMessage('NETWORK_ERROR'), position: 'bottom' });
     } finally {
       setIsSubmitting(false);
     }
@@ -109,7 +115,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     const otpString = otp.join('');
     if (otpString.length !== 6) {
       handleError('INVALID_OTP');
-      ToastAndroid.show(getErrorMessage('INVALID_OTP'), ToastAndroid.SHORT);
+      Toast.show({ type: 'error', text1: getErrorMessage('INVALID_OTP'), position: 'bottom' });
       return;
     }
 
@@ -119,18 +125,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       if (result.success) {
         clearError();
-        ToastAndroid.show('Login Successful', ToastAndroid.SHORT);
+        Toast.show({ type: 'success', text1: 'Login Successful', position: 'bottom' });
         navigation.navigate('Home');
       } else {
         handleError('INVALID_CREDENTIALS');
-        ToastAndroid.show(
-          result.error || getErrorMessage('INVALID_CREDENTIALS'),
-          ToastAndroid.SHORT
-        );
+        Toast.show({
+          type: 'error',
+          text1: result.error || getErrorMessage('INVALID_CREDENTIALS'),
+          position: 'bottom',
+        });
       }
     } catch (error) {
       handleError('INVALID_CREDENTIALS');
-      ToastAndroid.show(getErrorMessage('INVALID_CREDENTIALS'), ToastAndroid.SHORT);
+      Toast.show({
+        type: 'error',
+        text1: getErrorMessage('INVALID_CREDENTIALS'),
+        position: 'bottom',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +155,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       if (!verify) {
         if (!validatePhoneNumber(phonenumber)) {
           handleError('INVALID_PHONE');
-          ToastAndroid.show(getErrorMessage('INVALID_PHONE'), ToastAndroid.SHORT);
+          Toast.show({
+            type: 'error',
+            text1: getErrorMessage('INVALID_PHONE'),
+            position: 'bottom',
+          });
           setIsSubmitting(false);
           return;
         }
@@ -153,17 +168,25 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           setVerify(true);
           setTimer(180);
           setResend(false);
-          ToastAndroid.show('OTP Sent Successfully', ToastAndroid.SHORT);
+          Toast.show({ type: 'success', text1: 'OTP Sent Successfully' });
         } else {
           handleError('NETWORK_ERROR');
-          ToastAndroid.show(result.error || getErrorMessage('NETWORK_ERROR'), ToastAndroid.SHORT);
+          Toast.show({
+            type: 'error',
+            text1: result.error || getErrorMessage('NETWORK_ERROR'),
+            position: 'bottom',
+          });
         }
       } else {
         await handleVerifyOTP();
       }
     } catch (error) {
       console.error('Submit error:', error);
-      Alert.alert('Error', 'An unexpected error occurred during submission.');
+      Toast.show({
+        type: 'error',
+        text1: 'An unexpected error occurred during submission.',
+        position: 'bottom',
+      });
       handleError('GENERIC_ERROR');
     } finally {
       setIsSubmitting(false);
