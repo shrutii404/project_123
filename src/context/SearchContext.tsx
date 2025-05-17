@@ -4,7 +4,6 @@ import { useApiError } from '../core/hooks/useApiError';
 import { getErrorMessage } from '../core/error-handling/errorMessages';
 import apiClient from './apiClient';
 import { apiEndpoint } from '../utils/constants';
-import { Category } from './CategoryContext';
 
 interface SearchContextType {
   searchQuery: string;
@@ -43,42 +42,58 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setError(null);
     clearError();
     try {
-      // Fetch categories and filter by query
-      const catRes = await apiClient.get<Category[]>(`${apiEndpoint}/categories`);
-      const mappedCatProds = catRes.data
-        .filter(cat =>
-          cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .flatMap(cat =>
-          cat.products.map(p => ({
-            _id: p.id.toString(),
-            name: p.name,
-            description: p.description,
-            price: p.price,
-            thumbnail: p.images?.[0],
-          }))
+      const varRes = await apiClient.get(`${apiEndpoint}/product-variations`);
+      const normalizedQuery = searchQuery.toLowerCase().trim();
+      const queryWords = normalizedQuery.split(/\s+/);
+      const normalize = (str: string = ''): string =>
+        str
+          ?.toLowerCase()
+          .replace(/[\s\-|]+/g, ' ')
+          .trim() || '';
+      const formatSize = (size: string = ''): string => {
+        if (!size) return '';
+        const sizeParts = size
+          .replace(/[\s\-]+/g, ' ')
+          .toLowerCase()
+          .split(/[\sX*]+/);
+        const feet = sizeParts[0] || '';
+        const inches = sizeParts[1] || '';
+        return `${feet} feet X ${inches} inches`;
+      };
+      const combineAttributes = (attributes: Record<string, string> = {}): string => {
+        if (!attributes) return '';
+        return Object.entries(attributes)
+          .map(([key, value]) =>
+            key.split('_')[1] === 'Size' || key === 'Size' ? formatSize(value) : normalize(value)
+          )
+          .join(' ');
+      };
+      const matchesQuery = (
+        productName: string,
+        attributes: Record<string, string>,
+        query: string
+      ): boolean => {
+        const formattedProductName = normalize(productName).replace(/-/g, ' ');
+        const formattedAttributes = combineAttributes(attributes);
+        const normalizedQuery = normalize(query);
+        return (
+          formattedProductName.includes(normalizedQuery) ||
+          formattedAttributes.includes(normalizedQuery)
         );
-      // Fetch product variations matching query
-      const varRes = await apiClient.get(
-        `${apiEndpoint}/product-variations?name=${encodeURIComponent(searchQuery)}`
+      };
+      const filtered = (varRes.data as any[]).filter((product: any) =>
+        queryWords.every((query) => matchesQuery(product.name, product.attributes, query))
       );
-      const mappedVarProds = varRes.data.map((v: any) => ({
-        _id: v.product.id.toString(),
-        name: v.product.name,
-        description: v.product.description,
-        price: v.product.price,
-        thumbnail: v.product.images?.[0],
+      const mapped = filtered.map((p: any) => ({
+        _id: p.id?.toString() || p._id?.toString() || '',
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        thumbnail: p.images?.[0],
       }));
-      // Merge and dedupe
-      const all = [...mappedCatProds, ...mappedVarProds];
-      const uniqueMap: Record<string, any> = {};
-      all.forEach(prod => {
-        uniqueMap[prod._id] = prod;
-      });
-      setSearchResults(Object.values(uniqueMap));
-    } catch (err) {
-      console.error('Search error:', err);
-      const errorMessage = getErrorMessage(err);
+      setSearchResults(mapped);
+    } catch (err: any) {
+      const errorMessage = getErrorMessage(String(err));
       setError(errorMessage);
       handleError('SEARCH_ERROR');
     } finally {

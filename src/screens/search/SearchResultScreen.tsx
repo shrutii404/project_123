@@ -1,8 +1,8 @@
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, FlatList } from 'react-native';
 import React from 'react';
 import SearchLoader from '../../components/SearchLoader';
 import { useSearchBox } from '../../context/SearchContext';
-import ProductsCard from '../../components/ProductsCard';
+import ProductSearchCard from '../../components/ProductSearchCard';
 import SearchBar from '../../components/SearchBar';
 
 const SearchNotFound = () => {
@@ -31,23 +31,30 @@ const SearchNotFound = () => {
 
 const SearchResultScreen = () => {
   const { loading, searchResults, searchQuery, searchVisible } = useSearchBox();
+  const hasQuery = searchQuery && searchQuery.trim().length > 0;
+  const renderProduct = ({ item }: { item: any }) => {
+    return <ProductSearchCard key={item._id} product={item} />;
+  };
   return (
     <ScrollView className="flex-1 bg-white">
       <SearchBar searchVisible={searchVisible} />
       {loading && <SearchLoader />}
-      {!loading && (
+      {!loading && hasQuery && (
         <View className="h-20 items-center justify-center">
           <Text className="text-black text-2xl font-bold">{searchQuery}</Text>
         </View>
       )}
       {searchResults && searchResults.length > 0 ? (
-        <View className="w-full items-center">
-          {searchResults.map((product, index) => (
-            <ProductsCard key={index} data={product} />
-          ))}
-        </View>
+        <FlatList
+          data={searchResults.filter(
+            (product) => product && product._id && typeof product === 'object'
+          )}
+          renderItem={renderProduct}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={{ alignItems: 'center', width: '100%' }}
+        />
       ) : (
-        !loading && <SearchNotFound />
+        !loading && hasQuery && <SearchNotFound />
       )}
     </ScrollView>
   );
