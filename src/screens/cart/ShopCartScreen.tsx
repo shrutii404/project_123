@@ -31,16 +31,6 @@ const ShopCartScreen = () => {
   return (
     <ScrollView>
       <View className="h-full bg-white">
-        <View className="bg-black p-4 flex-row items-center">
-          <Image
-            source={{
-              uri: 'https://e-commerce-alpha-rouge.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ficon2.e1d79f09.png&w=750&q=75',
-            }}
-            className="h-9 w-9 rounded-full bg-black"
-          />
-          <Text className="text-white text-lg ml-3">Hurla Hardware & Paints</Text>
-        </View>
-
         <View className="  mt-8 w-full items-center">
           <View className="flex-1 rounded-md border-t-0 w-full items-center">
             <TouchableOpacity
@@ -62,7 +52,7 @@ const ShopCartScreen = () => {
             </TouchableOpacity>
             {isAccordionOpen && (
               <View className="p-4 w-[85%]">
-                <Text className="text-black text-gray-500">
+                <Text className="text-gray-500">
                   This offer is coming soon! Stay tuned for details on how you can benefit from this
                   exciting product discount.
                 </Text>

@@ -1,48 +1,74 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, Image } from 'react-native';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import apiClient from '../context/apiClient';
 
 const CartPriceCard = () => {
   const navigation = useNavigation();
   const { cart } = useCart();
-
-  const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const savedPrice = cart.reduce((a, b) => a + (b.price - b.discountPrice) * b.quantity, 0);
+  const { state: authState } = useAuth();
+  const userId = authState.user?._id || authState.user?.id;
   const [availability, setAvailability] = useState<number>(0);
   const [pincode, setPincode] = useState<string>('');
 
-  const isValidIndianPincode = (pincode: string): boolean => {
-    const pincodePattern = /^[0-9]{6}$/;
-    return pincodePattern.test(pincode);
-  };
+  useEffect(() => {
+    const fetchUserAddress = async () => {
+      if (!userId) return;
+      try {
+        const response = await apiClient.get(`/users/${userId}`);
+        const addresses = response.data.addresses || [];
+        if (addresses.length > 0) {
+          const selected = addresses.find((a: any) => a.selected) || addresses[0];
+          setPincode(selected.postalCode || '');
+          if (selected.postalCode) {
+            try {
+              const availResp = await apiClient.get(
+                `/distance?destinationPincode=${selected.postalCode}&sourcePincode=248001`
+              );
+              setAvailability(availResp.data.isAvailable ? 1 : 2);
+            } catch (err) {
+              setAvailability(0);
+            }
+          }
+        }
+      } catch (error) {}
+    };
+    fetchUserAddress();
+  }, [userId]);
 
-  const checkAvailability = () => {
-    if (!isValidIndianPincode(pincode)) {
-      Alert.alert('Please enter a valid 6-digit Indian pincode.');
-      return;
-    }
-    setAvailability(1);
-  };
+  const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const savedPrice = cart.reduce(
+    (a, b) =>
+      a +
+      (b.price - (b.attributes?.discountPrice ? Number(b.attributes.discountPrice) : 0)) *
+        b.quantity,
+    0
+  );
 
   return (
     <View className="flex flex-col gap-2">
       <View className="flex flex-col">
         <Text className="font-semibold text-base text-black">PRICE DETAILS ({cart.length})</Text>
-
+        {pincode ? (
+          <View className="flex-row items-center mt-2">
+            <Text className="text-sm font-normal text-black">Shipping to Pincode:</Text>
+            <Text className="font-semibold text-sm text-black ml-2">{pincode}</Text>
+          </View>
+        ) : null}
         <View className="flex-row justify-between items-center mt-2">
           <Text className="text-sm font-normal text-black">Price</Text>
           <Text className="font-semibold text-sm text-black">₹ {totalPrice.toFixed(2)}</Text>
         </View>
         <View className="flex-row justify-between items-center mt-2">
           <Text className="text-sm font-normal text-black">Discount on MRP</Text>
-          <Text className="font-semibold text-sm text-black">₹ {savedPrice?.toFixed(2)}</Text>
+          <Text className="font-semibold text-sm text-black">₹ {savedPrice.toFixed(2)}</Text>
         </View>
         <View className="flex-row justify-between items-center mt-2 border-b border-gray-300 pb-2">
           <Text className="text-sm font-normal text-black">Shipping Charges</Text>
           <Text className="font-semibold text-sm text-black">₹ 0.00</Text>
         </View>
-
         {availability > 0 && (
           <View
             className={`flex gap-2 rounded-full ${
@@ -57,7 +83,6 @@ const CartPriceCard = () => {
           </View>
         )}
       </View>
-
       <View className="flex flex-col">
         <View className="flex-row justify-between items-center mt-2">
           <Text className="text-sm font-semibold text-black">Total (inclusive of all taxes):</Text>
@@ -67,15 +92,14 @@ const CartPriceCard = () => {
           <Text className="text-sm font-normal text-gray-500">You Save</Text>
           <Text className="font-semibold text-sm text-gray-500">₹ {savedPrice.toFixed(2)}</Text>
         </View>
-
         <TouchableOpacity
           className="w-full bg-black py-2 rounded mt-2"
-          onPress={() => navigation.navigate('Checkout')}
+          onPress={() => (navigation as any).navigate('Checkout')}
+          disabled={cart.length === 0}
         >
           <Text className="text-white text-center">Checkout | ₹ {totalPrice.toFixed(2)}</Text>
         </TouchableOpacity>
       </View>
-
       <View className="flex flex-col gap-4 mt-8">
         <Text className="text-xs text-[#667085]">SECURE PAYMENTS PROVIDED BY</Text>
         <View className="flex flex-row border border-gray-200 items-center justify-center w-[30%]">

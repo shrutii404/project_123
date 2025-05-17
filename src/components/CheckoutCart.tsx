@@ -14,13 +14,18 @@ const CheckoutCart = () => {
       </View>
       <FlatList
         data={cart}
-        keyExtractor={(item) => item.productId.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <CheckoutCartCard
-            {...item}
-            removeFromCart={removeFromCart}
-            increment={increment}
-            decrement={decrement}
+            productId={parseInt(item.id, 10)}
+            price={item.price}
+            quantity={item.quantity}
+            name={item.name}
+            images={Array.isArray(item.image) ? item.image : [item.image]}
+            attributes={item.attributes}
+            removeFromCart={(productId: number) => removeFromCart(productId.toString())}
+            increment={(productId: number) => increment(productId.toString())}
+            decrement={(productId: number) => decrement(productId.toString())}
           />
         )}
       />

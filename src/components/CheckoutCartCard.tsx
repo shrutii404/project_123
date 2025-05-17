@@ -41,9 +41,9 @@ const CheckoutCartCard = ({
         source={{
           uri: images[0],
         }}
-        className="w-28 h-28 rounded-md"
+        className="w-28 h-24 rounded-md"
       />
-      <View className="flex-1 ml-2">
+      <View className="flex-1">
         <View className="flex flex-row justify-between items-start">
           <Text className="text-base font-medium text-black">{name}</Text>
           <TouchableOpacity onPress={() => removeFromCart(productId)}>

@@ -1,48 +1,70 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Truck, SpinnerGap } from 'phosphor-react-native';
-import { useSelector } from 'react-redux';
 import apiClient from '../context/apiClient';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import Toast from 'react-native-toast-message';
 
-const OrderSummaryCard = ({ setWebViewUrl, availability }) => {
+interface OrderSummaryCardProps {
+  setWebViewUrl: (url: string) => void;
+  availability: number;
+}
+
+const OrderSummaryCard: React.FC<OrderSummaryCardProps> = ({ setWebViewUrl, availability }) => {
+  const { cart } = useCart();
+  const { state: authState } = useAuth();
+  const userDetails = authState.user;
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [address] = useState([]);
 
-  const userDetails = useSelector((state) => state.user.user);
-  const cart = useSelector((state) => state.cart.items);
-
-  // Calculate total price and saved price
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
   const savedPrice = cart
-    .reduce((total, item) => total + (item.price - item.discountPrice) * item.quantity, 0)
+    .reduce((total, item) => {
+      const discount = Number(item.attributes?.discountPrice) || 0;
+      return total + (item.price - discount) * item.quantity;
+    }, 0)
     .toFixed(2);
+
+  const hasAddress = userDetails && userDetails.addresses && userDetails.addresses.length > 0;
 
   const handleCheckout = async () => {
     setCheckoutLoading(true);
-
     try {
       const response = await apiClient.post('/phonepe/payment', {
         name: userDetails.name,
         amount: totalPrice,
         mobileNo: userDetails.phoneNo,
-        userId: userDetails.id,
+        userId: userDetails._id || userDetails.id,
         cartItems: cart.map((item) => ({
-          productVariationId: item.productId,
+          productVariationId: item.id,
           quantity: item.quantity,
         })),
       });
-
       if (response.data.success) {
         const redirectUrl = response.data.data.instrumentResponse.redirectInfo.url;
-
         setWebViewUrl(redirectUrl);
+        Toast.show({
+          type: 'success',
+          text1: 'Redirecting to payment...',
+          position: 'bottom',
+        });
       } else {
         console.error('Payment initiation failed:', response.data.message);
-        // Handle payment initiation failure (e.g., show an error message to the user)
+        Toast.show({
+          type: 'error',
+          text1: 'Payment initiation failed',
+          text2: response.data.message || 'Please try again.',
+          position: 'bottom',
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during checkout:', error);
-      // Handle error (e.g., show an error message to the user)
+      Toast.show({
+        type: 'error',
+        text1: 'Checkout Error',
+        text2: error?.message || 'Something went wrong. Please try again.',
+        position: 'bottom',
+      });
     } finally {
       setCheckoutLoading(false);
     }
@@ -56,8 +78,8 @@ const OrderSummaryCard = ({ setWebViewUrl, availability }) => {
       <View className="flex-row mt-4">
         {cart.slice(0, 3).map((cartItem, i) => (
           <Image
-            key={cartItem.productId}
-            source={{ uri: cartItem.images[0] }}
+            key={cartItem.id}
+            source={{ uri: Array.isArray(cartItem.image) ? cartItem.image[0] : cartItem.image }}
             className={`w-16 h-16 rounded-md   ${i === 0 ? 'ml-0' : 'ml-2'}`}
           />
         ))}
@@ -111,11 +133,11 @@ const OrderSummaryCard = ({ setWebViewUrl, availability }) => {
       )}
       <TouchableOpacity
         className={`w-full flex-row items-center justify-center space-x-2 ${
-          address === null || availability === 2 || availability === 3 || checkoutLoading
+          !hasAddress || availability === 2 || availability === 3 || checkoutLoading
             ? 'bg-gray-300'
             : 'bg-black'
         }  p-3 rounded-md`}
-        disabled={address === null || availability === 2 || availability === 3 || checkoutLoading}
+        disabled={!hasAddress || availability === 2 || availability === 3 || checkoutLoading}
         onPress={handleCheckout}
       >
         {checkoutLoading ? (

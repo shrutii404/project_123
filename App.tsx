@@ -20,8 +20,6 @@ import WishlistScreen from './src/screens/Wishlist/WishlistScreen';
 import ManageProfileScreen from './src/screens/Profile/ManageProfileScreen';
 import CheckoutScreen from './src/screens/Checkout/CheckoutScreen';
 import ShopCartScreen from './src/screens/Cart/ShopCartScreen';
-import FailureScreen from './src/screens/Checkout/FailureScreen';
-import SuccessScreen from './src/screens/Checkout/SuccessScreen';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import PolicyScreen from './src/screens/PolicyScreen/PolicyScreen';
 import TermsAndServices from './src/screens/TermsAndServices/TermsAndServices';
@@ -242,8 +240,6 @@ function HomeStack() {
           })}
         />
       )}
-      <Stack.Screen name="Success" component={SuccessScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Failure" component={FailureScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }
