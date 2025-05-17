@@ -18,17 +18,13 @@ interface HeaderRightProps {
   };
 }
 
-interface CartItem {
-  id: string;
-  quantity: number;
-  // Removed local UserDetails interface, rely on RootState['user']['user'] type
-}
-
 const HeaderRight = ({ navigation }: HeaderRightProps) => {
   const { showModal, hideModal } = useModal();
   const { toggleSearchBar } = useSearchBox();
-  const { logout, state } = useAuth(); // Get logout function from context
-  const userDetails = state.user;
+  const {
+    logout,
+    state: { user: userDetails },
+  } = useAuth();
   const { cart } = useCart();
   const { state: wishlistState } = useWishlist();
   const wishlist = wishlistState.wishlist;
@@ -72,8 +68,8 @@ const HeaderRight = ({ navigation }: HeaderRightProps) => {
   };
 
   const handleLogout = async () => {
-    hideModal(); // Hide modal first
-    await logout(); // Call logout from useAuth context
+    hideModal();
+    await logout();
   };
 
   return (
@@ -84,7 +80,9 @@ const HeaderRight = ({ navigation }: HeaderRightProps) => {
       <TouchableOpacity onPress={() => navigation.navigate('Cart')} className="relative">
         {cart && cart.length > 0 && (
           <View className="absolute -top-1 right-1 bg-red-500 h-5 w-5 rounded-full z-20 items-center justify-center">
-            <Text className="text-[10px]">{cart.length}</Text>
+            <Text className="text-[10px]">
+              {cart.reduce((total, item) => total + (item.quantity || 0), 0)}
+            </Text>
           </View>
         )}
         <CartIcon />
