@@ -23,7 +23,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#242523"
       },
-      "package": "com.steploops.hurlahardwares"
+      "package": "com.steploops.hurlahardwares",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
