@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  ToastAndroid,
+  FlatList,
 } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import {
@@ -21,6 +21,7 @@ import ShimmerEffect from '../../components/ShimmerEffect';
 import { useAuth } from '../../context/AuthContext';
 import { apiEndpoint } from '../../utils/constants';
 import { useApiError } from '../../core/hooks/useApiError';
+import Toast from 'react-native-toast-message';
 
 interface UserAddress {
   id?: string;
@@ -75,10 +76,12 @@ const ManageProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const { error: apiError, handleError, clearError } = useApiError();
 
-  // Show toast on API errors once
   useEffect(() => {
     if (apiError) {
-      ToastAndroid.show(apiError, ToastAndroid.SHORT);
+      Toast.show({
+        type: 'error',
+        text1: apiError,
+      });
       clearError();
     }
   }, [apiError]);
@@ -126,7 +129,10 @@ const ManageProfileScreen = () => {
     try {
       await apiClient.delete(`${apiEndpoint}/address/${id}`);
       setAddress(address.filter((addr) => (addr.id || addr.addressId) !== id));
-      ToastAndroid.show('Address deleted successfully!', ToastAndroid.SHORT);
+      Toast.show({
+        type: 'success',
+        text1: 'Address deleted successfully!',
+      });
     } catch (error) {
       handleError(error);
     } finally {
@@ -140,7 +146,10 @@ const ManageProfileScreen = () => {
     try {
       await apiClient.delete(`${apiEndpoint}/review/delete/${reviewId}`);
       setReviews(reviews.filter((r) => r.id !== reviewId));
-      ToastAndroid.show('Review deleted successfully!', ToastAndroid.SHORT);
+      Toast.show({
+        type: 'success',
+        text1: 'Review deleted successfully!',
+      });
     } catch (error) {
       handleError(error);
     } finally {
@@ -163,7 +172,12 @@ const ManageProfileScreen = () => {
       const response = await apiClient.get(`${apiEndpoint}/users/${userId}`);
       const user = response.data;
       const [firstName, lastName] = user.name.split(' ');
-      setDetails({ first: firstName || '', last: lastName || '', email: user.email || '', phoneNo: user.phoneNo || '' });
+      setDetails({
+        first: firstName || '',
+        last: lastName || '',
+        email: user.email || '',
+        phoneNo: user.phoneNo || '',
+      });
       setAddress(user.addresses || []);
       setReviews(user.reviews || []);
     } catch (error) {
@@ -185,8 +199,13 @@ const ManageProfileScreen = () => {
       return;
     }
     try {
-      await apiClient.put(`${apiEndpoint}/users/${userId}`, { name: `${details.first} ${details.last}` });
-      ToastAndroid.show('Name updated successfully!', ToastAndroid.SHORT);
+      await apiClient.put(`${apiEndpoint}/users/${userId}`, {
+        name: `${details.first} ${details.last}`,
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Name updated successfully!',
+      });
       fetchUserDetails();
       setModalVisible(false);
     } catch (error) {
@@ -204,8 +223,14 @@ const ManageProfileScreen = () => {
       return;
     }
     try {
-      await apiClient.put(`${apiEndpoint}/users/${userId}`, { email: details.email, phoneNo: details.phoneNo });
-      ToastAndroid.show('Email updated successfully!', ToastAndroid.SHORT);
+      await apiClient.put(`${apiEndpoint}/users/${userId}`, {
+        email: details.email,
+        phoneNo: details.phoneNo,
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Email updated successfully!',
+      });
       fetchUserDetails();
       setModalVisible(false);
     } catch (error) {
@@ -219,8 +244,19 @@ const ManageProfileScreen = () => {
     clearError();
     setLoading(true);
     try {
-      await apiClient.post(`${apiEndpoint}/address`, { userId, street: shipping.street, city: shipping.city, state: shipping.state, country: shipping.country, postalCode: shipping.postalCode, selected: true });
-      ToastAndroid.show('Address saved successfully!', ToastAndroid.SHORT);
+      await apiClient.post(`${apiEndpoint}/address`, {
+        userId,
+        street: shipping.street,
+        city: shipping.city,
+        state: shipping.state,
+        country: shipping.country,
+        postalCode: shipping.postalCode,
+        selected: true,
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Address saved successfully!',
+      });
       fetchUserDetails();
       setModalVisible(false);
     } catch (error) {
@@ -328,30 +364,42 @@ const ManageProfileScreen = () => {
             <View className="mt-10 w-[95%] border-b border-gray-200 pb-6">
               <Text className="text-black font-bold text-3xl text-left">My Reviews</Text>
             </View>
-            {reviews &&
-              reviews.length > 0 &&
-              reviews.map((r) => (
-                <View key={r.id} className="border rounded-lg border-gray-200 p-2">
-                  <View className=" flex-row justify-between  items-center">
-                    <View className="flex-row items-center mb-2">
-                      {Array.from({ length: r.rating }).map((_, index) => (
-                        <Ionicons key={index} name="star" size={20} color="gold" />
-                      ))}
+            {reviews && reviews.length > 0 ? (
+              <FlatList
+                data={reviews}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item: r }) => (
+                  <View className="border rounded-lg border-gray-200 p-2 mb-2">
+                    <View className=" flex-row justify-between  items-center">
+                      <View className="flex-row items-center mb-2">
+                        {Array.from({ length: r.rating }).map((_, index) => (
+                          <Ionicons key={index} name="star" size={20} color="gold" />
+                        ))}
+                      </View>
+                      <Pressable
+                        className="bg-red-600 rounded p-1"
+                        onPress={() => handleDeleteReview(r.id)}
+                      >
+                        <AntIcons name="delete" size={10} color="white" />
+                      </Pressable>
                     </View>
-                    <Pressable className="bg-red-600 rounded p-1" onPress={() => handleDeleteReview(r.id)}>
-                      <AntIcons name="delete" size={10} color="white" />
-                    </Pressable>
+                    <View>
+                      <Text className="text-black font-semibold text-base">{r.productName}</Text>
+                      <Text className="text-black text-sm mt-3">{r.comment}</Text>
+                      <Text className="text-gray-500 text-xs mt-4">
+                        Posted at:{new Date(r.createdAt).toLocaleDateString()}{' '}
+                      </Text>
+                    </View>
                   </View>
-                  <View>
-                    <Text className="text-black font-semibold text-base">{r.productName}</Text>
-                    <Text className="text-black text-sm mt-3">{r.comment}</Text>
-                    <Text className="text-gray-500 text-xs mt-4">
-                      Posted at:{new Date(r.createdAt).toLocaleDateString()}{' '}
-                    </Text>
+                )}
+                ListEmptyComponent={
+                  <View className="mt-3">
+                    <Text className="text-black text-lg">No review available</Text>
                   </View>
-                </View>
-              ))}
-            {!reviews && (
+                }
+                contentContainerStyle={{ paddingBottom: 16 }}
+              />
+            ) : (
               <View className="mt-3">
                 <Text className="text-black text-lg">No review available</Text>
               </View>
