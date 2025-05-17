@@ -8,7 +8,6 @@ import HomeScreen from './src/screens/Home/HomeScreen';
 import LoginScreen from './src/screens/Auth/LoginScreen';
 
 import MenuIcon from './src/icons/MenuIcon';
-import { Provider } from 'react-redux';
 import { ModalProvider } from './src/context/ModalContext';
 import HeaderRight from './src/components/HeaderRight';
 import ProductsScreen from './src/screens/ProductDetails/ProductsScreen.jsx';
