@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  Linking,
+} from 'react-native';
 import { House } from 'phosphor-react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -11,6 +19,7 @@ const CheckoutScreen = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [webViewUrl, setWebViewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authState.user) {
@@ -31,6 +40,13 @@ const CheckoutScreen = () => {
     };
     fetchUserData();
   }, [authState.user]);
+
+  useEffect(() => {
+    if (webViewUrl) {
+      Linking.openURL(webViewUrl);
+      setWebViewUrl(null);
+    }
+  }, [webViewUrl]);
 
   if (loading) {
     return (
@@ -138,7 +154,7 @@ const CheckoutScreen = () => {
           </View>
         </View>
         <View className="mt-4">
-          <OrderSummaryCard setWebViewUrl={() => {}} availability={1} />
+          <OrderSummaryCard setWebViewUrl={setWebViewUrl} availability={1} />
         </View>
       </View>
     </ScrollView>
